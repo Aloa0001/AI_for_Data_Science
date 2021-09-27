@@ -4,10 +4,18 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 
 public class GameController {
-
     int[][] board = new int[6][7];
+
+    @FXML
+    private GridPane visualBoard;
+    private GridPane lastHighlighted = null;
+    private final String boardNormalHex = "#949D9D";
+    private final String boardHighlightHex = "#767D7D";
+
 
     //  0, 0, 0, 0, 0, 0, 0
     //  0, 0, 0, 0, 0, 0, 0
@@ -35,19 +43,48 @@ public class GameController {
     }
 
 
-
     @FXML
     protected void onMouseClicked(MouseEvent e) {
-        Node node = (Node)e.getTarget();
-        System.out.println("clicked column: " + GridPane.getColumnIndex(node));
+        int col = getColFromMouseEvent(e);
+        System.out.println("clicked column: " + col);
+    }
+
+
+    @FXML
+    protected void onMouseEnter(MouseEvent e) {
+        Integer col = getColFromMouseEvent(e);
+
+        if (col != null) {
+            lastHighlighted	= (GridPane)visualBoard.getChildren().get(col);
+            changeNodeColor(visualBoard.getChildren().get(col), boardHighlightHex);
+        }
+        else {
+            lastHighlighted = null;
+        }
     }
 
     @FXML
-    protected void onMouseEnter() {
+    protected void onMouseExit(MouseEvent e) {
+        if (lastHighlighted != null)
+            changeNodeColor(lastHighlighted, boardNormalHex);
     }
 
-    @FXML
-    protected void onMouseExit() {
+    private Integer getColFromMouseEvent(MouseEvent e) {
+        Node target = (Node) e.getTarget();
+        Integer col = GridPane.getColumnIndex(target);
+        return col;
+    }
+
+    private void changeNodeColor(Node node, String hex) {
+        node.setStyle("-fx-background-color:" + hex + ";");
+    }
+
+    private void changeCellColor(int row, int col, String hex) {
+        Circle cell = (Circle)((GridPane)visualBoard.getChildren().get(col)).getChildren().get(row);
+        if (hex == "" || hex == "#" || hex == null) {
+            hex = "#FFFFFF";
+        }
+        cell.setFill(Color.web(hex));
     }
 
 }

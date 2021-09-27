@@ -15,6 +15,8 @@ public class Connect4 extends Application {
         stage.setTitle("Connect 4");
         stage.setScene(scene);
         stage.show();
+
+        GameController gameController = (GameController)fxmlLoader.getController();
     }
 
     public static void main(String[] args) {

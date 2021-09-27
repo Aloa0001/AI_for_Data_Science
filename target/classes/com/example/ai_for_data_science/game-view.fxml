@@ -17,9 +17,9 @@
     <Button text="Hello!" onAction="#onHelloButtonClick"/>
 </VBox>-->
 
-<BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ai_for_data_science.GameController">
+<BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/16" fx:controller="com.example.ai_for_data_science.GameController">
     <center>
-        <GridPane id="game_board" fx:id="game_board" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="857.0" prefWidth="1070.0" style="-fx-background-color: #949D9D;">
+        <GridPane id="visualBoard" fx:id="visualBoard" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="857.0" prefWidth="1070.0" style="-fx-background-color: #949D9D;">
             <columnConstraints>
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />

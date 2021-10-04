@@ -61,12 +61,49 @@ public class Connect4 {
         if (p1.getType() == Type.HUMAN && p2.getType() == Type.HUMAN) {
             p1.setName("First Player");
             p2.setName("Second Player");
-        }else if (p1.getType() == Type.AI && p2.getType() == Type.HUMAN){
+        } else if (p1.getType() != Type.HUMAN && p2.getType() == Type.HUMAN) {
             firstPlayer = !firstPlayer;
             specialCase = true;
             aiTurn(new GameBoardUnit(firstPlayer, RADIUS), p2.move());
-        }
+        } else if (p1.getType() != Type.HUMAN && p2.getType() != Type.HUMAN) {
+            specialCase = true;
+            int column = 0;
+            int currentRow = 0;
+            do {
+                GameBoardUnit gameBoardUnit = new GameBoardUnit(firstPlayer, RADIUS);
+                column = firstPlayer ? 2 : p2.move();
+                int rowIndex = BOARD_ROWS - 1;
+                do {
+                    if (getGameBoard(column, rowIndex).isEmpty()) {
+                        break;
+                    }
 
+                    rowIndex--;
+                } while (rowIndex >= 0);
+
+                if (rowIndex < 0) {
+                    System.out.println("selected column is full");
+                    //
+                    return;
+                }
+
+                this.gameBoard[column][rowIndex] = gameBoardUnit;
+                gameBoardRoot.getChildren().add(gameBoardUnit);
+                gameBoardUnit.setTranslateX(column * (BOARD_UNIT_SIZE + EXTRA_SPACE) + (BOARD_UNIT_SIZE >> 2));
+
+                currentRow = rowIndex;
+
+                TranslateTransition animation = new TranslateTransition(Duration.seconds(1), gameBoardUnit);
+                animation.setToY(rowIndex * (BOARD_UNIT_SIZE + EXTRA_SPACE) + (BOARD_UNIT_SIZE >> 2));
+                animation.play();
+
+                if (checkWinner(column, currentRow)) {
+                    gameOver();
+                    break;
+                }
+                firstPlayer = !firstPlayer;
+            }while(true);
+        }
     }
 
     /**
@@ -151,9 +188,9 @@ public class Connect4 {
      * @param column    disc insertion
      */
     private void playerMove(GameBoardUnit gameBoard, int column) {
-        if (p1.getType() == Type.HUMAN && p2.getType() == Type.AI) {
+        if (p1.getType() == Type.HUMAN && p2.getType() != Type.HUMAN) {
             if (humanMove(gameBoard, column)) return;
-        } else if (p1.getType() == Type.AI && p2.getType() == Type.HUMAN) {
+        } else if (p1.getType() != Type.HUMAN && p2.getType() == Type.HUMAN) {
             if (humanMove(gameBoard, column)) return;
         } else if (p1.getType() == Type.HUMAN && p2.getType() == Type.HUMAN) {
             int rowIndex = BOARD_ROWS - 1;
@@ -221,7 +258,7 @@ public class Connect4 {
         animation.setOnFinished(e -> {
             if (checkWinner(column, currentRow)) {
                 gameOver();
-            }else{
+            } else {
                 firstPlayer = !firstPlayer;
                 aiTurn(new GameBoardUnit(firstPlayer, RADIUS), p2.move());
             }

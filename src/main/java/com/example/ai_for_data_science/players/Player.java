@@ -5,7 +5,8 @@ public class Player {
     private String name;
 
     public Player(String name) {
-        this.type = name.equals("Human") ? Type.HUMAN : Type.AI;
+        this.type = name.equals("Human") ? Type.HUMAN : name.equals("Minimax") ? Type.MINIMAX :
+                name.equals("Decision Tree") ? Type.DECISION_TREE : name.equals("Gaussian") ? Type.GAUSSIAN : Type.SVM;
         this.name = name;
     }
 

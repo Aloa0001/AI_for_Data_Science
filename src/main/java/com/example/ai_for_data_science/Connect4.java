@@ -32,7 +32,7 @@ public class Connect4 {
     private Player p1, p2;
 
     private boolean firstPlayer = true;
-    private final GameBoard[][] gameBoard = new GameBoard[BOARD_COLUMNS][BOARD_ROWS];
+    private final GameBoardUnit[][] gameBoard = new GameBoardUnit[BOARD_COLUMNS][BOARD_ROWS];
     private final Pane gameBoardRoot = new Pane();
     private Stage stage;
 
@@ -43,7 +43,7 @@ public class Connect4 {
         this.p1 = new Player(firstPlayer);
         this.p2 = new Player(secondPlayer);
 
-        if (p1.getType() == Type.HUMAN && p2.getType() == Type.HUMAN){
+        if (p1.getType() == Type.HUMAN && p2.getType() == Type.HUMAN) {
             p1.setName("First Player");
             p2.setName("Second Player");
         }
@@ -66,10 +66,11 @@ public class Connect4 {
 
     /**
      * create the game board
+     *
      * @return the grid shape with the circles
      */
     private Shape makeGridBoard() {
-        Shape shape = new Rectangle(BOARD_COLUMNS  * BOARD_UNIT_SIZE + BOARD_UNIT_SIZE, BOARD_ROWS  * BOARD_UNIT_SIZE + BOARD_UNIT_SIZE);
+        Shape shape = new Rectangle(BOARD_COLUMNS * BOARD_UNIT_SIZE + BOARD_UNIT_SIZE, BOARD_ROWS * BOARD_UNIT_SIZE + BOARD_UNIT_SIZE);
 
         // build each element of the grid
         for (int x = 0; x < BOARD_ROWS; x++) {
@@ -90,6 +91,7 @@ public class Connect4 {
 
     /**
      * create a circle
+     *
      * @param row location
      * @param col location
      * @return the circle
@@ -131,24 +133,100 @@ public class Connect4 {
 
     /**
      * setting action for click event
-     * @param column the column
+     *
+     * @param column  the column
      * @param colUnit the clicked unit
      */
     private void clickEvent(int column, Rectangle colUnit) {
-        colUnit.setOnMouseClicked(e -> playerMove(new GameBoard(firstPlayer), column));
+        colUnit.setOnMouseClicked(e -> playerMove(new GameBoardUnit(firstPlayer, RADIUS), column));
     }
 
     /**
-     *
      * @param gameBoard game
-     * @param column disc insertion
+     * @param column    disc insertion
      */
-    private void playerMove(GameBoard gameBoard, int column) {
-        if (p1.getType() == Type.HUMAN){
+    private void playerMove(GameBoardUnit gameBoard, int column) {
+        if (p1.getType() == Type.HUMAN && p2.getType() == Type.AI) {
 
-        }else{
+            if (humanMove(gameBoard, column)) return;
 
+        } else if (p1.getType() == Type.AI && p2.getType() == Type.HUMAN) {
+
+        } else if (p1.getType() == Type.HUMAN && p2.getType() == Type.HUMAN) {
+            int rowIndex = BOARD_ROWS - 1;
+            do {
+                if (getGameBoard(column, rowIndex).isEmpty()) {
+                    break;
+                }
+
+                rowIndex--;
+            } while (rowIndex >= 0);
+
+            if (rowIndex < 0) {
+                System.out.println("selected column is full");
+                //
+                return;
+            }
+
+            this.gameBoard[column][rowIndex] = gameBoard;
+            gameBoardRoot.getChildren().add(gameBoard);
+            gameBoard.setTranslateX(column * (BOARD_UNIT_SIZE + EXTRA_SPACE) + (BOARD_UNIT_SIZE >> 2));
+
+            final int currentRow = rowIndex;
+
+            TranslateTransition animation = new TranslateTransition(Duration.seconds(0.5), gameBoard);
+            animation.setToY(rowIndex * (BOARD_UNIT_SIZE + EXTRA_SPACE) + (BOARD_UNIT_SIZE >> 2));
+            animation.setOnFinished(e -> {
+                if (checkWinner(column, currentRow)) {
+                    gameOver();
+                }
+                firstPlayer = !firstPlayer;
+            });
+            animation.play();
+        } else {
+            // AIs playing
         }
+
+
+    }
+
+    private boolean humanMove(GameBoardUnit gameBoard, int column) {
+        int rowIndex = BOARD_ROWS - 1;
+        do {
+            if (getGameBoard(column, rowIndex).isEmpty()) {
+                break;
+            }
+
+            rowIndex--;
+        } while (rowIndex >= 0);
+
+        if (rowIndex < 0) {
+            System.out.println("selected column is full");
+            //
+            return true;
+        }
+
+        this.gameBoard[column][rowIndex] = gameBoard;
+        gameBoardRoot.getChildren().add(gameBoard);
+        gameBoard.setTranslateX(column * (BOARD_UNIT_SIZE + EXTRA_SPACE) + (BOARD_UNIT_SIZE >> 2));
+
+        final int currentRow = rowIndex;
+
+        TranslateTransition animation = new TranslateTransition(Duration.seconds(0.5), gameBoard);
+        animation.setToY(rowIndex * (BOARD_UNIT_SIZE + EXTRA_SPACE) + (BOARD_UNIT_SIZE >> 2));
+        animation.play();
+        animation.setOnFinished(e -> {
+            if (checkWinner(column, currentRow)) {
+                gameOver();
+            }else{
+                firstPlayer = !firstPlayer;
+                aiTurn(new GameBoardUnit(firstPlayer, RADIUS), p2.move());
+            }
+        });
+        return false;
+    }
+
+    private void aiTurn(GameBoardUnit gameBoardUnit, int column) {
         int rowIndex = BOARD_ROWS - 1;
         do {
             if (getGameBoard(column, rowIndex).isEmpty()) {
@@ -164,22 +242,20 @@ public class Connect4 {
             return;
         }
 
-        this.gameBoard[column][rowIndex] = gameBoard;
-        gameBoardRoot.getChildren().add(gameBoard);
-        gameBoard.setTranslateX(column * (BOARD_UNIT_SIZE + EXTRA_SPACE) + (BOARD_UNIT_SIZE >> 2));
+        this.gameBoard[column][rowIndex] = gameBoardUnit;
+        gameBoardRoot.getChildren().add(gameBoardUnit);
+        gameBoardUnit.setTranslateX(column * (BOARD_UNIT_SIZE + EXTRA_SPACE) + (BOARD_UNIT_SIZE >> 2));
 
         final int currentRow = rowIndex;
 
-        TranslateTransition animation = new TranslateTransition(Duration.seconds(0.1), gameBoard);
+        TranslateTransition animation = new TranslateTransition(Duration.seconds(1), gameBoardUnit);
         animation.setToY(rowIndex * (BOARD_UNIT_SIZE + EXTRA_SPACE) + (BOARD_UNIT_SIZE >> 2));
-        animation.setOnFinished(e -> {
-            if (checkWinner(column, currentRow)) {
-                gameOver();
-            }
-
-            firstPlayer = !firstPlayer;
-        });
         animation.play();
+
+        if (checkWinner(column, currentRow)) {
+            gameOver();
+        }
+        firstPlayer = !firstPlayer;
     }
 
     private boolean checkWinner(int column, int row) {
@@ -211,8 +287,8 @@ public class Connect4 {
             int column = (int) point2D.getX();
             int row = (int) point2D.getY();
 
-            var gameBoard = getGameBoard(column, row).orElse(new GameBoard(!firstPlayer));
-            if (gameBoard.firstPlayer == firstPlayer) {
+            var gameBoard = getGameBoard(column, row).orElse(new GameBoardUnit(!firstPlayer, RADIUS));
+            if (gameBoard.isFirstPlayer() == firstPlayer) {
                 collection++;
                 if (collection == 4) {
                     return true;
@@ -226,8 +302,9 @@ public class Connect4 {
     }
 
     private void gameOver() {
-
+        //TODO
         setStatistics();
+
         this.stage.close();
 
         System.out.println("Winner: " + (firstPlayer ? p1.getName() : p2.getName()));
@@ -240,23 +317,12 @@ public class Connect4 {
 
     }
 
-    private Optional<GameBoard> getGameBoard(int column, int row) {
+    private Optional<GameBoardUnit> getGameBoard(int column, int row) {
         if (column < 0 || column >= BOARD_COLUMNS
                 || row < 0 || row >= BOARD_ROWS)
             return Optional.empty();
 
         return Optional.ofNullable(gameBoard[column][row]);
     }
-
-    private static class GameBoard extends Circle {
-        private final boolean firstPlayer;
-
-        public GameBoard(boolean fistPlayer) {
-            super(RADIUS, fistPlayer ? Color.RED : Color.YELLOW);
-            this.firstPlayer = fistPlayer;
-
-            setCenterX(RADIUS);
-            setCenterY(RADIUS);
-        }
-    }
 }
+

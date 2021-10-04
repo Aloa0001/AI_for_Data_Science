@@ -9,6 +9,10 @@ public class Player {
         this.name = name;
     }
 
+    public int move(){
+        return 5;
+    }
+
     public Type getType() {
         return type;
     }

@@ -32,6 +32,7 @@ public class Connect4 {
     private Player p1, p2;
 
     private boolean firstPlayer = true;
+    private boolean specialCase = false;
     private final GameBoardUnit[][] gameBoard = new GameBoardUnit[BOARD_COLUMNS][BOARD_ROWS];
     private final Pane gameBoardRoot = new Pane();
     private Stage stage;
@@ -39,14 +40,9 @@ public class Connect4 {
     /**
      * display the game board
      */
-    public void play(String firstPlayer, String secondPlayer) {
-        this.p1 = new Player(firstPlayer);
-        this.p2 = new Player(secondPlayer);
-
-        if (p1.getType() == Type.HUMAN && p2.getType() == Type.HUMAN) {
-            p1.setName("First Player");
-            p2.setName("Second Player");
-        }
+    public void play(String firstPlayerName, String secondPlayerName) {
+        this.p1 = new Player(firstPlayerName);
+        this.p2 = new Player(secondPlayerName);
 
         Stage stage = new Stage();
 
@@ -61,6 +57,15 @@ public class Connect4 {
         stage.setScene(new Scene(scene));
         stage.show();
         this.stage = stage;
+
+        if (p1.getType() == Type.HUMAN && p2.getType() == Type.HUMAN) {
+            p1.setName("First Player");
+            p2.setName("Second Player");
+        }else if (p1.getType() == Type.AI && p2.getType() == Type.HUMAN){
+            firstPlayer = !firstPlayer;
+            specialCase = true;
+            aiTurn(new GameBoardUnit(firstPlayer, RADIUS), p2.move());
+        }
 
     }
 
@@ -147,11 +152,9 @@ public class Connect4 {
      */
     private void playerMove(GameBoardUnit gameBoard, int column) {
         if (p1.getType() == Type.HUMAN && p2.getType() == Type.AI) {
-
             if (humanMove(gameBoard, column)) return;
-
         } else if (p1.getType() == Type.AI && p2.getType() == Type.HUMAN) {
-
+            if (humanMove(gameBoard, column)) return;
         } else if (p1.getType() == Type.HUMAN && p2.getType() == Type.HUMAN) {
             int rowIndex = BOARD_ROWS - 1;
             do {
@@ -302,12 +305,11 @@ public class Connect4 {
     }
 
     private void gameOver() {
-        //TODO
-        setStatistics();
 
+        System.out.println("Winner: " + (specialCase && !firstPlayer ? p1.getName() : firstPlayer ? p1.getName() : p2.getName()));
+        setStatistics();
         this.stage.close();
 
-        System.out.println("Winner: " + (firstPlayer ? p1.getName() : p2.getName()));
         new Dashboard().run();
     }
 

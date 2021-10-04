@@ -7,7 +7,7 @@ public class GameBoardUnit extends Circle {
     private final boolean firstPlayer;
 
     public GameBoardUnit(boolean fistPlayer, int radius) {
-        super(radius, fistPlayer ? Color.RED : Color.YELLOW);
+        super(radius, fistPlayer ? Color.LIGHTSALMON : Color.LIGHTBLUE);
         this.firstPlayer = fistPlayer;
 
         setCenterX(radius);

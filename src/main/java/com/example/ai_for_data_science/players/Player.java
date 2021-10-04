@@ -1,6 +1,7 @@
 package com.example.ai_for_data_science.players;
 
 public class Player {
+    // private Algorithm algorithm;
     private Type type;
     private String name;
 
@@ -10,7 +11,8 @@ public class Player {
         this.name = name;
     }
 
-    public int move(){
+    public int move(/*boolean isFirstPlayer*/){
+        //
         return 5;
     }
 

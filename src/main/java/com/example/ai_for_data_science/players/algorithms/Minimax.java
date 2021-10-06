@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Minimax implements Algorithm {
-    static final int depth = -1; // -1 means infinite depth
+    final int depth = -1; // -1 means infinite depth
+    int nodesExamined = 0;
+    int branchesPruned = 0;
 
 
 //    gameBoard translation into int[]
@@ -21,15 +23,18 @@ public class Minimax implements Algorithm {
 //        28 29 30 31 32 33 34
 //        35 36 37 38 39 40 41
 
+
     @Override
     public int returnMove(int[] gameBoard) {
+        nodesExamined = 0;
+        branchesPruned = 0;
 
         int bestEval = Integer.MIN_VALUE;
         int bestMove = -1;
 
         for (int col : getAvailableMoves(gameBoard))
         {
-            int moveEval = minimax(gameBoard, depth, true);
+            int moveEval = minimax(gameBoard, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
 
             if (moveEval > bestEval) {
                 bestMove = col;
@@ -41,16 +46,26 @@ public class Minimax implements Algorithm {
     }
 
 
-    private int minimax(int[] gameBoard, int depth, boolean maximizingPlayer){
+    private int minimax(int[] gameBoard, int depth, int alpha, int beta, boolean maximizingPlayer){
 
-        if (depth == 0 || gameIsFinished(gameBoard) > -1) return evalGameState(gameBoard);
+        ++nodesExamined;
+
+        if (depth == 0 || gameIsFinished(gameBoard) > -1)
+            return evalGameState(gameBoard);
 
         if (maximizingPlayer) {
             int maxEval = Integer.MIN_VALUE;
 
             for (int col : getAvailableMoves(gameBoard)) {
-                int moveEval = minimax(nextGameBoard(gameBoard, col, false /*TODO: Determine if this is the first or second player*/), depth-1, false);
+                int moveEval = minimax(nextGameBoard(gameBoard, col, true), depth-1, alpha, beta, false);
                 maxEval = Math.max(maxEval, moveEval);
+
+                alpha = Math.max(alpha, maxEval);
+                if (beta <= alpha)
+                {
+                    ++branchesPruned;
+                    break;
+                }
             }
 
             return maxEval;
@@ -60,8 +75,15 @@ public class Minimax implements Algorithm {
             int minEval = Integer.MAX_VALUE;
 
             for (int col: getAvailableMoves(gameBoard)) {
-                int moveEval = minimax(nextGameBoard(gameBoard ,col, true /*TODO: Determine if this is the first or second player*/), depth-1, true);
+                int moveEval = minimax(nextGameBoard(gameBoard ,col, false), depth-1, alpha, beta, true);
                 minEval = Math.min(minEval, moveEval);
+
+                beta = Math.min(beta, minEval);
+                if (beta <= alpha)
+                {
+                    ++branchesPruned;
+                    break;
+                }
             }
 
             return minEval;
@@ -184,15 +206,15 @@ public class Minimax implements Algorithm {
      * Used by the minimax-algorithm to analyze the game in greater depth
      * @param gameBoard The current gameBoard
      * @param moveCol The move to make
-     * @param isFirstPlayer Whether this player is player 1 or 2
+     * @param maximizingPlayer Whether the move should be a 1 or 2
      * @return The next gameBoard, after the move has been made
      */
-    public int[] nextGameBoard(int[] gameBoard, int moveCol, boolean isFirstPlayer){
+    public int[] nextGameBoard(int[] gameBoard, int moveCol, boolean maximizingPlayer){
         int[] nextGameBoard = Arrays.copyOf(gameBoard, gameBoard.length);
 
         for (int i = moveCol + 35; i >= moveCol; i -= 7) {
             if (gameBoard[i] == 0) {
-                nextGameBoard[i] = isFirstPlayer ? 1 : 2;
+                nextGameBoard[i] = maximizingPlayer ? 1 : 2;
                 return nextGameBoard;
             }
         }

@@ -50,8 +50,10 @@ public class Minimax implements Algorithm {
 
         ++nodesExamined;
 
-        if (depth == 0 || gameIsFinished(gameBoard) > -1)
-            return evalGameState(gameBoard);
+        if (gameIsFinished(gameBoard) > -1) // if the game finished => evaluate the position to find the next best move
+            return evalGameFinished(gameBoard);
+        if (depth == 0)     // if the maximum depth was hit => evaluate the position to find the next best move
+            return evalGame(gameBoard);
 
         if (maximizingPlayer) {
             int maxEval = Integer.MIN_VALUE;
@@ -102,14 +104,66 @@ public class Minimax implements Algorithm {
     }
 
     /**
-     * Evaluates how good the position is.
+     * Evaluates how good a won/tied position is.
      * The best position is the one where player 1 won, and the worst is when player 2 won
      */
-    private int evalGameState(int[] gameBoard) {
+    private int evalGameFinished(int[] gameBoard) {
 
         int eval = gameIsFinished(gameBoard);
         if (eval == 2) eval = -1; //assigns negative score to the position where player 2 won
         return eval;
+    }
+
+    /**
+     * Evaluates how good a not won/tied position is.
+     * Checks each combination of 4 tiles in a row, and sums the number of player1 discs - player2 discs
+     * This means the evaluation considers tiles used in multiple 4-in-a-row combinations as more valuable
+     */
+    private int evalGame(int[] gameBoard) {
+
+        int fourCellEval = 0;
+
+        // Horizontal check
+        for (int row = 0; row < 6; row++) {
+            for (int col = 0; col < 7-3; col++) {
+                fourCellEval += (gameBoard[row * 7 + col] % 2) * 2 - 1;
+                fourCellEval += (gameBoard[row * 7 + col + 1] % 2) * 2 - 1;
+                fourCellEval += (gameBoard[row * 7 + col + 2] % 2) * 2 - 1;
+                fourCellEval += (gameBoard[row * 7 + col + 3] % 2) * 2 - 1;
+            }
+        }
+
+        // Vertical check
+        for (int col = 0; col < 7; col++) {
+            for (int row = 0; row < 6-3; row++) {
+                fourCellEval += (gameBoard[col + row * 7] % 2) * 2 - 1;
+                fourCellEval += (gameBoard[col + (row + 1) * 7] % 2) * 2 - 1;
+                fourCellEval += (gameBoard[col + (row + 2) * 7] % 2) * 2 - 1;
+                fourCellEval += (gameBoard[col + (row + 3) * 7] % 2) * 2 - 1;
+            }
+        }
+
+        // diagonal (down + left) check
+        for (int col = 3; col < 7; col++){
+            for (int row = 0; row < 6-3; row++){
+                fourCellEval += (gameBoard[col + row * 7] % 2) * 2 - 1;
+                fourCellEval += (gameBoard[col - 1 + (row + 1) * 7] % 2) * 2 - 1;
+                fourCellEval += (gameBoard[col - 2 + (row + 2) * 7] % 2) * 2 - 1;
+                fourCellEval += (gameBoard[col - 3 + (row + 3) * 7] % 2) * 2 - 1;
+            }
+        }
+
+        // diagonal (up + left) check
+        for (int col = 3; col < 7; col++){
+            for (int row = 3; row < 6; row++){
+                fourCellEval += (gameBoard[col + row * 7] % 2) * 2 - 1;
+                fourCellEval += (gameBoard[col - 1 + (row - 1) * 7] % 2) * 2 - 1;
+                fourCellEval += (gameBoard[col - 2 + (row - 2) * 7] % 2) * 2 - 1;
+                fourCellEval += (gameBoard[col - 3 + (row - 3) * 7] % 2) * 2 - 1;
+            }
+        }
+
+        return fourCellEval;
     }
 
     /**

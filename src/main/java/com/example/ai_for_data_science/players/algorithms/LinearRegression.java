@@ -57,7 +57,7 @@ public class LinearRegression {
         return sums;
     }
     private float predict(float[] independentFeature) {
-        float sum = 0;
+        float sum = bias;
         for (int j = 0; j < independentFeature.length; j++) {
             sum += independentFeature[j] * weights[j];
         }
@@ -90,7 +90,7 @@ public class LinearRegression {
 
         for (int i = 0; i < batchSize; i++) {
             randomIndices[i] = r.nextInt(independentFeatures.length);
-            predictions[i] = predict(independentFeatures[i]);
+            predictions[i] = predict(independentFeatures[randomIndices[i]]);
         }
 
         float[] d_dependentFeatures = new float[weights.length];

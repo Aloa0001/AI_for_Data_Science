@@ -45,7 +45,6 @@ public class Dashboard {
         regression.print();
 
 
-
         ObservableList<String> players = FXCollections
                 .observableArrayList("Human", "Minimax", "Decision Tree", "BayesianClassifier", "SVM");
         var playerOne = new ChoiceBox();

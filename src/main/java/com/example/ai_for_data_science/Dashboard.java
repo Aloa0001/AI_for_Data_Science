@@ -1,5 +1,6 @@
 package com.example.ai_for_data_science;
 
+import com.example.ai_for_data_science.players.algorithms.LinearRegression;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
@@ -15,6 +16,36 @@ public class Dashboard {
     private static Stage stage;
 
     public void run() {
+
+
+        float[][] independentFeatures = new float[][] {
+                {0.79f, 0.77f},
+                {1.28f, 1.77f},
+                {1.69f, 1.07f},
+                {2.34f, 2.68f},
+                {3.26f, 1.82f},
+                {4.12f, 3.42f}
+        };
+        float[] dependentFeatures = new float[] {
+                0.81f,
+                1.24f,
+                2.00f,
+                2.50f,
+                4.02f,
+                4.80f
+        };
+        float[] weights = new float[] {
+                1.0f,
+                1.0f
+        };
+
+        LinearRegression regression = new LinearRegression(independentFeatures, dependentFeatures, weights,
+                0.0f,0.01f, 1000,3);
+        regression.train();
+        regression.print();
+
+
+
         ObservableList<String> players = FXCollections
                 .observableArrayList("Human", "Minimax", "Decision Tree", "BayesianClassifier", "SVM");
         var playerOne = new ChoiceBox();

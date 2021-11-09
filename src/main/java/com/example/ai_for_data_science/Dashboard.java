@@ -16,7 +16,7 @@ public class Dashboard {
 
     public void run() {
         ObservableList<String> players = FXCollections
-                .observableArrayList("Human", "Minimax", "Decision Tree", "Gaussian", "SVM");
+                .observableArrayList("Human", "Minimax", "Decision Tree", "BayesianClassifier", "SVM");
         var playerOne = new ChoiceBox();
         ChoiceBox<String> playerTwo = new ChoiceBox<>();
 

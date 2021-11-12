@@ -1,5 +1,6 @@
 package com.example.ai_for_data_science.players.algorithms;
 import java.lang.Math;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -14,7 +15,7 @@ public class LinearRegression {
         this.bias = bias;
         this.learningRate = learningRate;
         this.iterations = iterations;
-        this.batchSize =batchSize;
+        this.batchSize = batchSize;
     }
 
     private final float[][] independentFeatures;
@@ -86,10 +87,15 @@ public class LinearRegression {
         int[] randomIndices = new int[batchSize];
         float[] predictions = new float[batchSize];
 
+        ArrayList<Integer> indicesSampleSpace = new ArrayList<Integer>(independentFeatures.length);
+        for(int i = 0; i < independentFeatures.length; i++) {
+            indicesSampleSpace.add(i);
+        }
         Random r = new Random();
 
         for (int i = 0; i < batchSize; i++) {
-            randomIndices[i] = r.nextInt(independentFeatures.length);
+            randomIndices[i] = indicesSampleSpace.get(r.nextInt(indicesSampleSpace.size()));
+            indicesSampleSpace.remove((Integer)randomIndices[i]);
             predictions[i] = predict(independentFeatures[randomIndices[i]]);
         }
 

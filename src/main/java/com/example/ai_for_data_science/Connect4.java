@@ -1,367 +1,194 @@
 package com.example.ai_for_data_science;
 
-import com.example.ai_for_data_science.players.Player;
-import com.example.ai_for_data_science.players.Type;
-import javafx.animation.TranslateTransition;
-import javafx.geometry.Point2D;
-import javafx.scene.Scene;
-import javafx.scene.layout.Border;
-import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.Shape;
-import javafx.stage.Stage;
-import javafx.util.Duration;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
-import static javafx.scene.shape.Shape.subtract;
+import java.util.Arrays;
 
 public class Connect4 {
 
-    private static final int BOARD_UNIT_SIZE = 60;
-    private static final int BOARD_COLUMNS = 7;
-    private static final int BOARD_ROWS = 6;
-    private final int EXTRA_SPACE = 5;
-    private static final int RADIUS = BOARD_UNIT_SIZE >> 1;
-    private Player p1, p2;
+    private int[] gameBoard = new int[42];
 
-    private boolean firstPlayer = true;
-    private boolean specialCase = false;
-    private final GameBoardUnit[][] gameBoard = new GameBoardUnit[BOARD_COLUMNS][BOARD_ROWS];
-    private final Pane gameBoardRoot = new Pane();
-    private Stage stage;
 
-    /**
-     * display the game board
-     */
-    public void play(String firstPlayerName, String secondPlayerName) {
-        this.p1 = new Player(firstPlayerName);
-        this.p2 = new Player(secondPlayerName);
+    public Connect4() {
 
-        Stage stage = new Stage();
+        for (int i = 0; i < gameBoard.length; i++) {
+            gameBoard[i] = 0;
+        }
+    }
 
-        stage.setTitle("Connect4");
-        Pane scene = new Pane();
-        scene.setBorder(Border.EMPTY);
-        scene.getChildren().add(gameBoardRoot);
+    public void play(Algorithm player1, Algorithm player2) {
+        int gameIsFinished = -1;
 
-        Shape gridBoard = makeGridBoard();
-        scene.getChildren().add(gridBoard);
-        scene.getChildren().addAll(makeColumns());
-        stage.setScene(new Scene(scene));
-        stage.show();
-        this.stage = stage;
+        boolean isPlayerOne = true;
+        int moveCol;
 
-        if (p1.getType() == Type.HUMAN && p2.getType() == Type.HUMAN) {
-            p1.setName("First Player");
-            p2.setName("Second Player");
-        } else if (p1.getType() != Type.HUMAN && p2.getType() == Type.HUMAN) {
-            firstPlayer = !firstPlayer;
-            specialCase = true;
-            aiTurn(new GameBoardUnit(firstPlayer, RADIUS), p2.move());
-        } else if (p1.getType() != Type.HUMAN && p2.getType() != Type.HUMAN) {
-            specialCase = true;
-            int column = 0;
-            int currentRow = 0;
-            do {
-                GameBoardUnit gameBoardUnit = new GameBoardUnit(firstPlayer, RADIUS);
-                column = firstPlayer ? 2 : p2.move();
-                int rowIndex = BOARD_ROWS - 1;
-                do {
-                    if (getGameBoard(column, rowIndex).isEmpty()) {
-                        break;
+        do {
+            /* Alternate player and get the move */
+            if (isPlayerOne) {
+                moveCol = player1.returnMove(gameBoard, true);
+            }
+            else {
+
+                int[] test_gameBoard = gameBoard;
+
+                for (int x : test_gameBoard) {
+                    if(x == 1) {
+                        x = 2;
                     }
-
-                    rowIndex--;
-                } while (rowIndex >= 0);
-
-                if (rowIndex < 0) {
-                    System.out.println("selected column is full");
-                    //
-                    return;
+                    else if (x == 2){
+                        x = 1;
+                    }
                 }
 
-                this.gameBoard[column][rowIndex] = gameBoardUnit;
-                gameBoardRoot.getChildren().add(gameBoardUnit);
-                gameBoardUnit.setTranslateX(column * (BOARD_UNIT_SIZE + EXTRA_SPACE) + (BOARD_UNIT_SIZE >> 2));
+                moveCol = player2.returnMove(test_gameBoard, false);
+            }
 
-                currentRow = rowIndex;
+            if (validateMove(moveCol)) {
+                performMove(moveCol, isPlayerOne);
+            }
+            else {
+                // This should never happen! :)    //throw new Exception("Invalid move was played!");
+            }
 
-                TranslateTransition animation = new TranslateTransition(Duration.seconds(1), gameBoardUnit);
-                animation.setToY(rowIndex * (BOARD_UNIT_SIZE + EXTRA_SPACE) + (BOARD_UNIT_SIZE >> 2));
-                animation.play();
+            isPlayerOne = !isPlayerOne;
 
-                if (checkWinner(column, currentRow)) {
-                    gameOver();
-                    break;
-                }
-                firstPlayer = !firstPlayer;
-            }while(true);
+        } while ((gameIsFinished = gameIsFinished(gameBoard)) == -1);
+
+        for (int i = 0; i < 6; i++) {
+            for (int j = 0; j < 7; j++) {
+                System.out.print(gameBoard[j + i * 7]);
+            }
+            System.out.print("\n");
         }
+
+        System.out.println();
+        System.out.println("\n\n Game is over! Result: " + gameIsFinished);
+        // Game is finished!
+
+    }
+
+
+    private Boolean validateMove(int moveCol) {
+        return gameBoard[moveCol] == 0;
+    }
+
+    private void performMove(int moveCol, boolean isPlayerOne) {
+        gameBoard = nextGameBoard(gameBoard, moveCol, isPlayerOne);
+    }
+
+
+    private void print() {
+
+    }
+
+
+    /**
+     * Returns how the next gameBoard will look, after the inputted move has been made.
+     * Used by the minimax-algorithm to analyze the game in greater depth
+     * @param gameBoard The current gameBoard
+     * @param moveCol The move to make
+     * @param isPlayerOne Whether the move should be a 1 or 2
+     * @return The next gameBoard, after the move has been made
+     */
+    public static int[] nextGameBoard(int[] gameBoard, int moveCol, boolean isPlayerOne){
+        int[] nextGameBoard = Arrays.copyOf(gameBoard, gameBoard.length);
+
+        for (int i = moveCol + 35; i >= moveCol; i -= 7) {
+            if (gameBoard[i] == 0) {
+                nextGameBoard[i] = isPlayerOne ? 1 : 2;
+                return nextGameBoard;
+            }
+        }
+        return null;
     }
 
     /**
-     * create the game board
-     *
-     * @return the grid shape with the circles
+     * Evaluates if any player has won the game
+     * @param gameBoard The gameBoard that is evaluated
+     * @return -1: the game has _not_ been finished, 0: the game is a tie, 1: player1 won, 2: player2 won
      */
-    private Shape makeGridBoard() {
-        Shape shape = new Rectangle(BOARD_COLUMNS * BOARD_UNIT_SIZE + BOARD_UNIT_SIZE, BOARD_ROWS * BOARD_UNIT_SIZE + BOARD_UNIT_SIZE);
+    public static int gameIsFinished(int[] gameBoard){
 
-        // build each element of the grid
-        for (int x = 0; x < BOARD_ROWS; x++) {
-            for (int y = 0; y < BOARD_COLUMNS; y++) {
-
-                // for each element (row, col) create a circle
-                Circle circle = getCircle(x, y);
-
-                // subtract the area of the  circle from the shape
-                shape = subtract(shape, circle);
-            }
-        }
-
-        shape.setFill(Color.DARKGRAY);
-
-        return shape;
-    }
-
-    /**
-     * create a circle
-     *
-     * @param row location
-     * @param col location
-     * @return the circle
-     */
-    private Circle getCircle(int row, int col) {
-        Circle circle = new Circle();
-        circle.setRadius(Connect4.RADIUS);
-
-        // the horizontal/vertical position of the center of the circle in pixels and translate to the next
-        circle.setCenterX(Connect4.RADIUS);
-        circle.setCenterY(Connect4.RADIUS);
-
-        // set the circle on the grid
-        circle.setTranslateX(col * (BOARD_UNIT_SIZE + EXTRA_SPACE) + (Connect4.RADIUS >> 1));
-        circle.setTranslateY(row * (BOARD_UNIT_SIZE + EXTRA_SPACE) + (Connect4.RADIUS >> 1));
-
-        return circle;
-    }
-
-    private List<Rectangle> makeColumns() {
-        List<Rectangle> columns = new ArrayList<>();
-
-        for (int col = 0; col < BOARD_COLUMNS; col++) {
-            Rectangle colUnit = new Rectangle(BOARD_UNIT_SIZE, (BOARD_ROWS + 1) * BOARD_UNIT_SIZE);
-            colUnit.setTranslateX(col * (BOARD_UNIT_SIZE + EXTRA_SPACE) + (BOARD_UNIT_SIZE >> 2));
-            colUnit.setFill(Color.TRANSPARENT);
-
-            // add mouse/click events
-            colUnit.setOnMouseEntered(e -> colUnit.setFill(Color.rgb(122, 122, 109, 0.2)));
-            colUnit.setOnMouseExited(e -> colUnit.setFill(Color.TRANSPARENT));
-
-            clickEvent(col, colUnit);
-
-            columns.add(colUnit);
-        }
-
-        return columns;
-    }
-
-    /**
-     * setting action for click event
-     *
-     * @param column  the column
-     * @param colUnit the clicked unit
-     */
-    private void clickEvent(int column, Rectangle colUnit) {
-        colUnit.setOnMouseClicked(e -> playerMove(new GameBoardUnit(firstPlayer, RADIUS), column));
-    }
-
-    /**
-     * @param gameBoard game
-     * @param column    disc insertion
-     */
-    private void playerMove(GameBoardUnit gameBoard, int column) {
-        if (p1.getType() == Type.HUMAN && p2.getType() != Type.HUMAN) {
-            if (humanMove(gameBoard, column)) return;
-        } else if (p1.getType() != Type.HUMAN && p2.getType() == Type.HUMAN) {
-            if (humanMove(gameBoard, column)) return;
-        } else if (p1.getType() == Type.HUMAN && p2.getType() == Type.HUMAN) {
-            int rowIndex = BOARD_ROWS - 1;
-            do {
-                if (getGameBoard(column, rowIndex).isEmpty()) {
-                    break;
+        // Horizontal check
+        for (int row = 0; row < 6; row++) {
+            for (int col = 0; col < 7-3; col++) {
+                if (gameBoard[row * 7 + col] == 1 &&
+                        gameBoard[row * 7 + col + 1] == 1 &&
+                        gameBoard[row * 7 + col + 2] == 1 &&
+                        gameBoard[row * 7 + col + 3] == 1){
+                    return 1; // player 1 has 4 horizontal discs in a row
                 }
-
-                rowIndex--;
-            } while (rowIndex >= 0);
-
-            if (rowIndex < 0) {
-                System.out.println("selected column is full");
-                //
-                return;
-            }
-
-            this.gameBoard[column][rowIndex] = gameBoard;
-            gameBoardRoot.getChildren().add(gameBoard);
-            gameBoard.setTranslateX(column * (BOARD_UNIT_SIZE + EXTRA_SPACE) + (BOARD_UNIT_SIZE >> 2));
-
-            final int currentRow = rowIndex;
-
-            TranslateTransition animation = new TranslateTransition(Duration.seconds(0.5), gameBoard);
-            animation.setToY(rowIndex * (BOARD_UNIT_SIZE + EXTRA_SPACE) + (BOARD_UNIT_SIZE >> 2));
-            animation.setOnFinished(e -> {
-                if (checkWinner(column, currentRow)) {
-                    gameOver();
+                if (gameBoard[row * 7 + col] == 2 &&
+                        gameBoard[row * 7 + col + 1] == 2 &&
+                        gameBoard[row * 7 + col + 2] == 2 &&
+                        gameBoard[row * 7 + col + 3] == 2){
+                    return 2; // player 2 has 4 horizontal discs in a row
                 }
-                firstPlayer = !firstPlayer;
-            });
-            animation.play();
-        } else {
-            // AIs playing
-        }
-
-
-    }
-
-    private boolean humanMove(GameBoardUnit gameBoard, int column) {
-        int rowIndex = BOARD_ROWS - 1;
-        do {
-            if (getGameBoard(column, rowIndex).isEmpty()) {
-                break;
             }
-
-            rowIndex--;
-        } while (rowIndex >= 0);
-
-        if (rowIndex < 0) {
-            System.out.println("selected column is full");
-            //
-            return true;
         }
 
-        this.gameBoard[column][rowIndex] = gameBoard;
-        gameBoardRoot.getChildren().add(gameBoard);
-        gameBoard.setTranslateX(column * (BOARD_UNIT_SIZE + EXTRA_SPACE) + (BOARD_UNIT_SIZE >> 2));
-
-        final int currentRow = rowIndex;
-
-        TranslateTransition animation = new TranslateTransition(Duration.seconds(0.5), gameBoard);
-        animation.setToY(rowIndex * (BOARD_UNIT_SIZE + EXTRA_SPACE) + (BOARD_UNIT_SIZE >> 2));
-        animation.play();
-        animation.setOnFinished(e -> {
-            if (checkWinner(column, currentRow)) {
-                gameOver();
-            } else {
-                firstPlayer = !firstPlayer;
-                aiTurn(new GameBoardUnit(firstPlayer, RADIUS), p2.move());
-            }
-        });
-        return false;
-    }
-
-    private void aiTurn(GameBoardUnit gameBoardUnit, int column) {
-        int rowIndex = BOARD_ROWS - 1;
-        do {
-            if (getGameBoard(column, rowIndex).isEmpty()) {
-                break;
-            }
-
-            rowIndex--;
-        } while (rowIndex >= 0);
-
-        if (rowIndex < 0) {
-            System.out.println("selected column is full");
-            //
-            return;
-        }
-
-        this.gameBoard[column][rowIndex] = gameBoardUnit;
-        gameBoardRoot.getChildren().add(gameBoardUnit);
-        gameBoardUnit.setTranslateX(column * (BOARD_UNIT_SIZE + EXTRA_SPACE) + (BOARD_UNIT_SIZE >> 2));
-
-        final int currentRow = rowIndex;
-
-        TranslateTransition animation = new TranslateTransition(Duration.seconds(1), gameBoardUnit);
-        animation.setToY(rowIndex * (BOARD_UNIT_SIZE + EXTRA_SPACE) + (BOARD_UNIT_SIZE >> 2));
-        animation.play();
-
-        if (checkWinner(column, currentRow)) {
-            gameOver();
-        }
-        firstPlayer = !firstPlayer;
-    }
-
-    private boolean checkWinner(int column, int row) {
-        var colAlignment = IntStream.rangeClosed(column - 3, column + 3)
-                .mapToObj(col -> new Point2D(col, row))
-                .collect(Collectors.toList());
-
-        var rowAlignment = IntStream.rangeClosed(row - 3, row + 3)
-                .mapToObj(r -> new Point2D(column, r))
-                .collect(Collectors.toList());
-
-        var firstDiagonal = new Point2D(column - 3, row - 3);
-        var firstDiag = IntStream.rangeClosed(0, 6)
-                .mapToObj(i -> firstDiagonal.add(i, i))
-                .collect(Collectors.toList());
-
-        var secondDiagonal = new Point2D(column - 3, row + 3);
-        var secondDiag = IntStream.rangeClosed(0, 6)
-                .mapToObj(i -> secondDiagonal.add(i, -i))
-                .collect(Collectors.toList());
-
-        return !(!checkWinningCondition(rowAlignment) && !checkWinningCondition(colAlignment) && !checkWinningCondition(firstDiag) && !checkWinningCondition(secondDiag));
-    }
-
-    private boolean checkWinningCondition(List<Point2D> points) {
-        int collection = 0;
-
-        for (Point2D point2D : points) {
-            int column = (int) point2D.getX();
-            int row = (int) point2D.getY();
-
-            var gameBoard = getGameBoard(column, row).orElse(new GameBoardUnit(!firstPlayer, RADIUS));
-            if (gameBoard.isFirstPlayer() == firstPlayer) {
-                collection++;
-                if (collection == 4) {
-                    return true;
+        // Vertical check
+        for (int col = 0; col < 7; col++) {
+            for (int row = 0; row < 6-3; row++) {
+                if (gameBoard[col + row * 7] == 1 &&
+                        gameBoard[col + (row + 1) * 7] == 1 &&
+                        gameBoard[col + (row + 2) * 7] == 1 &&
+                        gameBoard[col + (row + 3) * 7] == 1){
+                    return 1; // player 1 has 4 vertical discs in a row
                 }
-            } else {
-                collection = 0;
+                if (gameBoard[col + row * 7] == 2 &&
+                        gameBoard[col + (row + 1) * 7] == 2 &&
+                        gameBoard[col + (row + 2) * 7] == 2 &&
+                        gameBoard[col + (row + 3) * 7] == 2){
+                    return 2; // player 2 has 4 vertical discs in a row
+                }
             }
         }
 
-        return false;
+        // diagonal (down + left) check
+        for (int col = 3; col < 7; col++){
+            for (int row = 0; row < 6-3; row++){
+                if (gameBoard[col + row * 7] == 1 &&
+                        gameBoard[col - 1 + (row + 1) * 7] == 1 &&
+                        gameBoard[col - 2 + (row + 2) * 7] == 1 &&
+                        gameBoard[col - 3 + (row + 3) * 7] == 1){
+                    return 1; // player 1 has 4 diagonal discs in a row
+                }
+                if (gameBoard[col + row * 7] == 2 &&
+                        gameBoard[col - 1 + (row + 1) * 7] == 2 &&
+                        gameBoard[col - 2 + (row + 2) * 7] == 2 &&
+                        gameBoard[col - 3 + (row + 3) * 7] == 2){
+                    return 2; // player 2 has 4 diagonal discs in a row
+                }
+            }
+        }
+        // diagonal (up + left) check
+        for (int col = 3; col < 7; col++){
+            for (int row = 3; row < 6; row++){
+                if (gameBoard[col + row * 7] == 1 &&
+                        gameBoard[col - 1 + (row - 1) * 7] == 1 &&
+                        gameBoard[col - 2 + (row - 2) * 7] == 1 &&
+                        gameBoard[col - 3 + (row - 3) * 7] == 1){
+                    return 1; // player 1 has 4 diagonal discs in a row
+                }
+                if (gameBoard[col + row * 7] == 2 &&
+                        gameBoard[col - 1 + (row - 1) * 7] == 2 &&
+                        gameBoard[col - 2 + (row - 2) * 7] == 2 &&
+                        gameBoard[col - 3 + (row - 3) * 7] == 2){
+                    return 2; // player 2 has 4 diagonal discs in a row
+                }
+            }
+        }
+
+        // not a tie check
+        for (int i = 0; i < 7; i++) {
+            if (gameBoard[i] == 0) { // found a tile where a disc can be placed => the game has _not_ been finished
+                return -1;
+            }
+        }
+
+        return 0; // if no player has won, and no more tiles can be placed => game resulted in a tie
     }
 
-    private void gameOver() {
 
-        System.out.println("Winner: " + (specialCase && !firstPlayer ? p1.getName() : firstPlayer ? p1.getName() : p2.getName()));
-        setStatistics();
-        this.stage.close();
-
-        new Dashboard().run();
-    }
-
-    private void setStatistics() {
-
-        // TODO Add the game data to each player's data
-
-    }
-
-    private Optional<GameBoardUnit> getGameBoard(int column, int row) {
-        if (column < 0 || column >= BOARD_COLUMNS
-                || row < 0 || row >= BOARD_ROWS)
-            return Optional.empty();
-
-        return Optional.ofNullable(gameBoard[column][row]);
-    }
 }
 

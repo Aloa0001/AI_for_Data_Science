@@ -1,15 +1,20 @@
 package com.example.ai_for_data_science;
 
-import javafx.application.Application;
-import javafx.stage.Stage;
 
-public class Main extends Application {
-    @Override
-    public void start(Stage stage) {
-        new Dashboard().run();
-    }
+import com.example.ai_for_data_science.players.algorithms.Minimax;
+
+public class Main {
 
     public static void main(String[] args) {
-        if (args != null) launch(args);
+        run();
+    }
+
+    private static void run() {
+
+        Algorithm player1 = new Minimax();
+        Algorithm player2 = new Minimax();
+
+        Connect4 c4 = new Connect4();
+        c4.play(player1, player2);
     }
 }

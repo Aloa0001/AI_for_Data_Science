@@ -1,18 +1,18 @@
 package com.example.ai_for_data_science;
 
 
+import com.example.ai_for_data_science.players.algorithms.Minimax;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Connect4 {
 
-    private int[] gameBoard = new int[42];
+    private int[] gameBoard = new int[42];      // Default value is 0
+    private ArrayList<Integer> moveOrder = new ArrayList<>();
 
 
     public Connect4() {
-
-        for (int i = 0; i < gameBoard.length; i++) {
-            gameBoard[i] = 0;
-        }
     }
 
     public void play(Algorithm player1, Algorithm player2) {
@@ -22,62 +22,66 @@ public class Connect4 {
         int moveCol;
 
         do {
-            /* Alternate player and get the move */
+            /* Alternate player and get the move decided by the player */
             if (isPlayerOne) {
-                moveCol = player1.returnMove(gameBoard, true);
+                moveCol = player1.returnMove(gameBoard);
             }
             else {
-
-                int[] test_gameBoard = gameBoard;
-
-                for (int x : test_gameBoard) {
-                    if(x == 1) {
-                        x = 2;
-                    }
-                    else if (x == 2){
-                        x = 1;
-                    }
-                }
-
-                moveCol = player2.returnMove(test_gameBoard, false);
+                  moveCol = player2.returnMove(gameBoard);
             }
 
             if (validateMove(moveCol)) {
                 performMove(moveCol, isPlayerOne);
+                moveOrder.add(moveCol);
             }
             else {
-                // This should never happen! :)    //throw new Exception("Invalid move was played!");
+                try {
+                    throw new Exception("Invalid move was played!");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
 
             isPlayerOne = !isPlayerOne;
 
         } while ((gameIsFinished = gameIsFinished(gameBoard)) == -1);
 
-        for (int i = 0; i < 6; i++) {
-            for (int j = 0; j < 7; j++) {
-                System.out.print(gameBoard[j + i * 7]);
-            }
-            System.out.print("\n");
-        }
 
-        System.out.println();
-        System.out.println("\n\n Game is over! Result: " + gameIsFinished);
-        // Game is finished!
-
+        // The game has finished!
+        System.out.println("\nGame is over! Result: " + gameIsFinished);
+        printGameBoard(gameBoard);
+        System.out.println(moveOrder.toString());
     }
 
 
-    private Boolean validateMove(int moveCol) {
+    private static void printGameBoard(int[] gameBoard) {
+        System.out.println("____ gameBoard ____");
+        for (int i = 0; i < 6; i++) {
+            for (int j = 0; j < 7; j++) {
+                System.out.print(gameBoard[j + i * 7] + "  ");
+            }
+            System.out.println("");
+        }
+        System.out.println("___________________");
+    }
+
+    public static String gameBoardToString(int[] gameBoard) {
+        String representaion = "";
+        for (int i = 0; i < 6; i++) {
+            for (int j = 0; j < 7; j++) {
+                representaion += (gameBoard[j + i * 7] + " ");
+            }
+        }
+        return representaion;
+    }
+
+
+    private boolean validateMove(int moveCol) {
         return gameBoard[moveCol] == 0;
     }
 
     private void performMove(int moveCol, boolean isPlayerOne) {
         gameBoard = nextGameBoard(gameBoard, moveCol, isPlayerOne);
-    }
-
-
-    private void print() {
-
     }
 
 
@@ -99,6 +103,17 @@ public class Connect4 {
             }
         }
         return null;
+    }
+
+    /**
+     * @return A list of valid columns where the disc can be placed
+     */
+    public static ArrayList<Integer> getAvailableMoves(int[] gameBoard) {
+        ArrayList<Integer> moves = new ArrayList<>();
+        for (int col = 0; col < 7; col++) {
+            if (gameBoard[col] == 0) moves.add(col);
+        }
+        return moves;
     }
 
     /**

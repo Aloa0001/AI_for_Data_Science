@@ -3,14 +3,12 @@ package com.example.ai_for_data_science.players.algorithms;
 import com.example.ai_for_data_science.Algorithm;
 import com.example.ai_for_data_science.Connect4;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
 public class Minimax implements Algorithm {
-    final int depth = 2; // -1 means infinite depth
+    final int depth = 7; // -1 means infinite depth
     int nodesExamined = 0;
     int branchesPruned = 0;
 
+    boolean isPlayerOne;
 
 //        0  1  2  3  4  5  6
 //        7  8  9  10 11 12 13
@@ -19,18 +17,22 @@ public class Minimax implements Algorithm {
 //        28 29 30 31 32 33 34
 //        35 36 37 38 39 40 41
 
+    public Minimax(boolean isPlayerOne) {
+        this.isPlayerOne = isPlayerOne;
+    }
+
 
     @Override
-    public int returnMove(int[] gameBoard, boolean isPlayerOne) {
+    public int returnMove(int[] gameBoard) {
         nodesExamined = 0;
         branchesPruned = 0;
 
         int bestEval = Integer.MIN_VALUE;
         int bestMove = -1;
 
-        for (int col : getAvailableMoves(gameBoard))
+        for (int col : Connect4.getAvailableMoves(gameBoard))
         {
-            int moveEval = minimax(gameBoard, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
+            int moveEval = minimax(Connect4.nextGameBoard(gameBoard, col, isPlayerOne), depth, Integer.MIN_VALUE, Integer.MAX_VALUE, false);
 
             if (moveEval > bestEval) {
                 bestMove = col;
@@ -47,15 +49,15 @@ public class Minimax implements Algorithm {
         ++nodesExamined;
 
         if (Connect4.gameIsFinished(gameBoard) > -1) // if the game finished => evaluate the position to find the next best move
-            return evalGameFinished(gameBoard);
+            return evalGameFinished(gameBoard, depth);
         if (depth == 0)     // if the maximum depth was hit => evaluate the position to find the next best move
             return evalGame(gameBoard);
 
         if (maximizingPlayer) {
             int maxEval = Integer.MIN_VALUE;
 
-            for (int col : getAvailableMoves(gameBoard)) {
-                int moveEval = minimax(Connect4.nextGameBoard(gameBoard, col, true), depth-1, alpha, beta, false);
+            for (int col : Connect4.getAvailableMoves(gameBoard)) {
+                int moveEval = minimax(Connect4.nextGameBoard(gameBoard, col, isPlayerOne), depth-1, alpha, beta, false);
                 maxEval = Math.max(maxEval, moveEval);
 
                 alpha = Math.max(alpha, maxEval);
@@ -72,8 +74,8 @@ public class Minimax implements Algorithm {
         {
             int minEval = Integer.MAX_VALUE;
 
-            for (int col: getAvailableMoves(gameBoard)) {
-                int moveEval = minimax(Connect4.nextGameBoard(gameBoard ,col, false), depth-1, alpha, beta, true);
+            for (int col: Connect4.getAvailableMoves(gameBoard)) {
+                int moveEval = minimax(Connect4.nextGameBoard(gameBoard, col, !isPlayerOne), depth-1, alpha, beta, true);
                 minEval = Math.min(minEval, moveEval);
 
                 beta = Math.min(beta, minEval);
@@ -89,25 +91,18 @@ public class Minimax implements Algorithm {
     }
 
     /**
-     * @return A list of valid columns where the disc can be placed
+     * Evaluates how good a won/tied position is based on who's turn it is and who won
+     * The depth ensures that winning faster and losing slower is considered better
      */
-    private ArrayList<Integer> getAvailableMoves(int[] gameBoard) {
-        ArrayList<Integer> moves = new ArrayList<>();
-        for (int col = 0; col < 7; col++) {
-            if (gameBoard[col] == 0) moves.add(col);
-        }
-        return moves;
-    }
-
-    /**
-     * Evaluates how good a won/tied position is.
-     * The best position is the one where player 1 won, and the worst is when player 2 won
-     */
-    private int evalGameFinished(int[] gameBoard) {
-
+    private int evalGameFinished(int[] gameBoard, int depth) {
         int eval = Connect4.gameIsFinished(gameBoard);
-        if (eval == 2) eval = -1; //assigns negative score to the position where player 2 won
-        return eval;
+
+        if ((eval == 2 && isPlayerOne) || (eval == 1 && !isPlayerOne)) {
+            return -1000 + depth;
+        }
+        else {
+            return 1000 - depth;
+        }
     }
 
     /**
@@ -122,48 +117,51 @@ public class Minimax implements Algorithm {
         // Horizontal check
         for (int row = 0; row < 6; row++) {
             for (int col = 0; col < 7-3; col++) {
-                fourCellEval += (gameBoard[row * 7 + col] % 2) * 2 - 1;
-                fourCellEval += (gameBoard[row * 7 + col + 1] % 2) * 2 - 1;
-                fourCellEval += (gameBoard[row * 7 + col + 2] % 2) * 2 - 1;
-                fourCellEval += (gameBoard[row * 7 + col + 3] % 2) * 2 - 1;
+                fourCellEval += remapCellValue(gameBoard[row * 7 + col]);
+                fourCellEval += remapCellValue(gameBoard[row * 7 + col + 1]);
+                fourCellEval += remapCellValue(gameBoard[row * 7 + col + 2]);
+                fourCellEval += remapCellValue(gameBoard[row * 7 + col + 3]);
             }
         }
 
         // Vertical check
         for (int col = 0; col < 7; col++) {
             for (int row = 0; row < 6-3; row++) {
-                fourCellEval += (gameBoard[col + row * 7] % 2) * 2 - 1;
-                fourCellEval += (gameBoard[col + (row + 1) * 7] % 2) * 2 - 1;
-                fourCellEval += (gameBoard[col + (row + 2) * 7] % 2) * 2 - 1;
-                fourCellEval += (gameBoard[col + (row + 3) * 7] % 2) * 2 - 1;
+                fourCellEval += remapCellValue(gameBoard[col + row * 7]);
+                fourCellEval += remapCellValue(gameBoard[col + (row + 1) * 7]);
+                fourCellEval += remapCellValue(gameBoard[col + (row + 2) * 7]);
+                fourCellEval += remapCellValue(gameBoard[col + (row + 3) * 7]);
             }
         }
 
         // diagonal (down + left) check
         for (int col = 3; col < 7; col++){
             for (int row = 0; row < 6-3; row++){
-                fourCellEval += (gameBoard[col + row * 7] % 2) * 2 - 1;
-                fourCellEval += (gameBoard[col - 1 + (row + 1) * 7] % 2) * 2 - 1;
-                fourCellEval += (gameBoard[col - 2 + (row + 2) * 7] % 2) * 2 - 1;
-                fourCellEval += (gameBoard[col - 3 + (row + 3) * 7] % 2) * 2 - 1;
+                fourCellEval += remapCellValue(gameBoard[col + row * 7]);
+                fourCellEval += remapCellValue(gameBoard[col - 1 + (row + 1) * 7]);
+                fourCellEval += remapCellValue(gameBoard[col - 2 + (row + 2) * 7]);
+                fourCellEval += remapCellValue(gameBoard[col - 3 + (row + 3) * 7]);
             }
         }
 
         // diagonal (up + left) check
         for (int col = 3; col < 7; col++){
             for (int row = 3; row < 6; row++){
-                fourCellEval += (gameBoard[col + row * 7] % 2) * 2 - 1;
-                fourCellEval += (gameBoard[col - 1 + (row - 1) * 7] % 2) * 2 - 1;
-                fourCellEval += (gameBoard[col - 2 + (row - 2) * 7] % 2) * 2 - 1;
-                fourCellEval += (gameBoard[col - 3 + (row - 3) * 7] % 2) * 2 - 1;
+                fourCellEval += remapCellValue(gameBoard[col + row * 7]);
+                fourCellEval += remapCellValue(gameBoard[col - 1 + (row - 1) * 7]);
+                fourCellEval += remapCellValue(gameBoard[col - 2 + (row - 2) * 7]);
+                fourCellEval += remapCellValue(gameBoard[col - 3 + (row - 3) * 7]);
             }
         }
-//
-//        if (isPlayerOne == false)
-//            fourCellEval *= -1;
 
+        // System.out.println("gameBoard:  " + Connect4.gameBoardToString(gameBoard) + "    eval:  " + fourCellEval);
+
+        fourCellEval = isPlayerOne ? fourCellEval : -fourCellEval;
         return fourCellEval;
     }
 
-    
+
+    private int remapCellValue(int value) {
+        return (value == 2) ? -1 : value;  // 0->0, 1->1, 2->-1
+    }
 }

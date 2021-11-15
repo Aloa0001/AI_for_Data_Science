@@ -4,11 +4,13 @@ import com.example.ai_for_data_science.Algorithm;
 import com.example.ai_for_data_science.Connect4;
 
 public class Minimax implements Algorithm {
-    final int depth = 7; // -1 means infinite depth
+    final int depth = 0; // -1 means infinite depth
     int nodesExamined = 0;
     int branchesPruned = 0;
 
     boolean isPlayerOne;
+
+    long startTime;
 
 //        0  1  2  3  4  5  6
 //        7  8  9  10 11 12 13
@@ -19,13 +21,14 @@ public class Minimax implements Algorithm {
 
     public Minimax(boolean isPlayerOne) {
         this.isPlayerOne = isPlayerOne;
+        nodesExamined = 0;
+        branchesPruned = 0;
+        startTime = System.currentTimeMillis();
     }
 
 
     @Override
     public int returnMove(int[] gameBoard) {
-        nodesExamined = 0;
-        branchesPruned = 0;
 
         int bestEval = Integer.MIN_VALUE;
         int bestMove = -1;
@@ -43,6 +46,14 @@ public class Minimax implements Algorithm {
         return bestMove;
     }
 
+    @Override
+    public void printResults() {
+        System.out.println("\nMinimax results:");
+        System.out.println("  Depth: " + depth);
+        System.out.println("  Time elapsed: " + ((System.currentTimeMillis() - startTime) / 1000) + " (s)");
+        System.out.println("  Nodes Examined: " + nodesExamined);
+        System.out.println("  Branches Pruned: " + branchesPruned);
+    }
 
     private int minimax(int[] gameBoard, int depth, int alpha, int beta, boolean maximizingPlayer){
 

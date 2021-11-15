@@ -16,5 +16,10 @@ public class RandomMove implements Algorithm {
         return availableMoves.get(random.nextInt(availableMoves.size()));
     }
 
+    @Override
+    public void printResults() {
+
+    }
+
 }
 

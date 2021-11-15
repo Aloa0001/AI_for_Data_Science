@@ -21,10 +21,12 @@ public class Main {
 //        Algorithm player1 = new RandomMove();
 //        Algorithm player2 = new Minimax(false);
 
-
-
+        System.out.println(player1.getClass().getSimpleName() + " vs " + player2.getClass().getSimpleName());
 
         Connect4 c4 = new Connect4();
         c4.play(player1, player2);
+
+        player1.printResults();
+        // player2.printResults();
     }
 }

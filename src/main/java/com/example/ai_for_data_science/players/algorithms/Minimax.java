@@ -4,7 +4,7 @@ import com.example.ai_for_data_science.Algorithm;
 import com.example.ai_for_data_science.Connect4;
 
 public class Minimax implements Algorithm {
-    final int depth = 0; // -1 means infinite depth
+    final int depth = 7; // -1 means infinite depth
     int nodesExamined = 0;
     int branchesPruned = 0;
 
@@ -109,10 +109,10 @@ public class Minimax implements Algorithm {
         int eval = Connect4.gameIsFinished(gameBoard);
 
         if ((eval == 2 && isPlayerOne) || (eval == 1 && !isPlayerOne)) {
-            return -1000 + depth;
+            return -100000 - depth;
         }
         else {
-            return 1000 - depth;
+            return 100000 + depth;
         }
     }
 

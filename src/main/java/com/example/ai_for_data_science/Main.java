@@ -3,6 +3,7 @@ package com.example.ai_for_data_science;
 
 import com.example.ai_for_data_science.players.algorithms.Human;
 import com.example.ai_for_data_science.players.algorithms.Minimax;
+import com.example.ai_for_data_science.players.algorithms.RandomMinimax;
 import com.example.ai_for_data_science.players.algorithms.RandomMove;
 
 public class Main {
@@ -13,8 +14,11 @@ public class Main {
 
     private static void run() {
 
-        Algorithm player1 = new Minimax(true);
-        Algorithm player2 = new Human();
+        Algorithm player1 = new RandomMinimax(true, 2);
+        Algorithm player2 = new RandomMinimax(false, 2);
+
+//        Algorithm player1 = new Minimax(true);
+//        Algorithm player2 = new Human();
 
 //        Algorithm player1 = new Minimax(true);
 //        Algorithm player2 = new Minimax(false);

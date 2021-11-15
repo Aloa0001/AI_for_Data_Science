@@ -4,13 +4,15 @@ import com.example.ai_for_data_science.Algorithm;
 import com.example.ai_for_data_science.Connect4;
 
 public class Minimax implements Algorithm {
-    final int depth = 7; // -1 means infinite depth
+    final int depth = 6; // -1 means infinite depth (this implementation is too slow for that ): )
     int nodesExamined = 0;
     int branchesPruned = 0;
 
     boolean isPlayerOne;
 
     long startTime;
+
+    boolean collectData;
 
 //        0  1  2  3  4  5  6
 //        7  8  9  10 11 12 13
@@ -19,7 +21,7 @@ public class Minimax implements Algorithm {
 //        28 29 30 31 32 33 34
 //        35 36 37 38 39 40 41
 
-    public Minimax(boolean isPlayerOne) {
+    public Minimax(boolean isPlayerOne, boolean collectData) {
         this.isPlayerOne = isPlayerOne;
         nodesExamined = 0;
         branchesPruned = 0;
@@ -58,9 +60,19 @@ public class Minimax implements Algorithm {
     private int minimax(int[] gameBoard, int depth, int alpha, int beta, boolean maximizingPlayer){
 
         ++nodesExamined;
+        int evalGameFinished;
+        if ((evalGameFinished = Connect4.gameIsFinished(gameBoard)) > -1) {     // if the game finished => evaluate the position to find the next best move
 
-        if (Connect4.gameIsFinished(gameBoard) > -1) // if the game finished => evaluate the position to find the next best move
-            return evalGameFinished(gameBoard, depth);
+            if (collectData) {
+                try {
+                    Connect4.collectData(gameBoard, evalGameFinished);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            return evalGameFinished(gameBoard, evalGameFinished, depth);
+        }
         if (depth == 0)     // if the maximum depth was hit => evaluate the position to find the next best move
             return evalGame(gameBoard);
 
@@ -105,13 +117,11 @@ public class Minimax implements Algorithm {
      * Evaluates how good a won/tied position is based on who's turn it is and who won
      * The depth ensures that winning faster and losing slower is considered better
      */
-    private int evalGameFinished(int[] gameBoard, int depth) {   // (me)p1 loses in the next move
-        int eval = Connect4.gameIsFinished(gameBoard);
-
-        if ((eval == 2 && isPlayerOne) || (eval == 1 && !isPlayerOne)) {
+    private int evalGameFinished(int[] gameBoard, int evalGameFinished, int depth) {   // (me)p1 loses in the next move
+        if ((evalGameFinished == 2 && isPlayerOne) || (evalGameFinished == 1 && !isPlayerOne)) {
             return -100000 - depth;
         }
-        else if ((eval == 1) || (eval == 2)){
+        else if ((evalGameFinished == 1) || (evalGameFinished == 2)){
             return 100000 + depth;
         }
         else {

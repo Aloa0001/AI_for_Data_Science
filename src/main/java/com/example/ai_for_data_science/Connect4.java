@@ -3,8 +3,13 @@ package com.example.ai_for_data_science;
 
 import com.example.ai_for_data_science.players.algorithms.Minimax;
 
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Scanner;
+import java.util.stream.Stream;
 
 public class Connect4 {
 
@@ -69,7 +74,7 @@ public class Connect4 {
         String representaion = "";
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j < 7; j++) {
-                representaion += (gameBoard[j + i * 7] + " ");
+                representaion += (gameBoard[j + i * 7]);
             }
         }
         return representaion;
@@ -204,6 +209,80 @@ public class Connect4 {
         return 0; // if no player has won, and no more tiles can be placed => game resulted in a tie
     }
 
+
+
+//    public  static void collectData(int[] gameBoard, int evalGameFinished) throws IOException {
+//        String gameBoardRepresentation = gameBoardToString(gameBoard);
+//
+//        Scanner scanner = new Scanner(new File("gameData.csv"));
+//        int i = 0;
+//        boolean found = false;
+//        while (scanner.hasNextLine()) {
+//            String line = scanner.nextLine();
+//            if (line.contains(gameBoardRepresentation + ",")) {
+//                found = true;
+//                break;
+//            }
+//            ++i;
+//        }
+//
+//        BufferedWriter writer = new BufferedWriter(new FileWriter("gameData.csv", true));
+//
+//        int playerOneWins = 0, playerOneLosses = 0, totalGames = 1;
+//
+//        if (found) {
+//            try (Stream<String> lines = Files.lines(Paths.get("gameData.csv"))) {
+//                String line_i = lines.skip(i).findFirst().get();
+//
+//                String[] rows = line_i.split(",");
+//                playerOneWins = Integer.parseInt(rows[1]);
+//                playerOneLosses = Integer.parseInt(rows[2]);
+//                totalGames = Integer.parseInt(rows[3]);
+//
+//                if (evalGameFinished == 1) playerOneWins++;
+//                else playerOneLosses++;
+//                totalGames++;
+//            }
+//        }
+//        else {
+//
+//            if (evalGameFinished == 1) playerOneWins = 1;
+//            else playerOneLosses = 1;
+//        }
+//
+//        writer.write(String.format("%s,%d,%d,%d\n", gameBoardToString(gameBoard), playerOneWins, playerOneLosses, totalGames));
+//        writer.close();
+//    }
+
+    public  static void collectData(int[] gameBoard, int evalGameFinished) throws IOException {
+        String gameBoardRepresentation = gameBoardToString(gameBoard);
+
+        Scanner scanner = new Scanner(new File("gameData.csv"));
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            if (line.contains(gameBoardRepresentation + ",")) {
+                return;
+            }
+        }
+
+        BufferedWriter writer = new BufferedWriter(new FileWriter("gameData.csv", true));
+
+        String gameResult = "-";    // "t" - tie,  "w" - p1 win,  "l" - p1 lose
+        switch (evalGameFinished){
+            case 0:
+                gameResult = "t";
+                break;
+            case 1:
+                gameResult = "w";
+                break;
+            case 2:
+                gameResult = "l";
+                break;
+        }
+
+        writer.write(String.format("%s,%s\n", gameBoardToString(gameBoard), gameResult));
+        writer.close();
+    }
 
 }
 

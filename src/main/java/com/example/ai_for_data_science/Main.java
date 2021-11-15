@@ -14,8 +14,8 @@ public class Main {
 
     private static void run() {
 
-        Algorithm player1 = new RandomMinimax(true, 2);
-        Algorithm player2 = new RandomMinimax(false, 2);
+        Algorithm player1 = new RandomMinimax(true, 3, true);
+        Algorithm player2 = new RandomMinimax(false, 3, false);
 
 //        Algorithm player1 = new Minimax(true);
 //        Algorithm player2 = new Human();

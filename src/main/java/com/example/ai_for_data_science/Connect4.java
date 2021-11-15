@@ -30,7 +30,7 @@ public class Connect4 {
                   moveCol = player2.returnMove(gameBoard);
             }
 
-            if (validateMove(moveCol)) {
+            if (validateMove(gameBoard, moveCol)) {
                 performMove(moveCol, isPlayerOne);
                 moveOrder.add(moveCol);
             }
@@ -54,7 +54,7 @@ public class Connect4 {
     }
 
 
-    private static void printGameBoard(int[] gameBoard) {
+    public static void printGameBoard(int[] gameBoard) {
         System.out.println("____ gameBoard ____");
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j < 7; j++) {
@@ -76,8 +76,8 @@ public class Connect4 {
     }
 
 
-    private boolean validateMove(int moveCol) {
-        return gameBoard[moveCol] == 0;
+    public static boolean validateMove(int[] gameBoard, int moveCol) {
+        return  moveCol >= 0 && moveCol <= 6 && gameBoard[moveCol] == 0;
     }
 
     private void performMove(int moveCol, boolean isPlayerOne) {

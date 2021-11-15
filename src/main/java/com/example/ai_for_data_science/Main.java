@@ -6,6 +6,8 @@ import com.example.ai_for_data_science.players.algorithms.Minimax;
 import com.example.ai_for_data_science.players.algorithms.RandomMinimax;
 import com.example.ai_for_data_science.players.algorithms.RandomMove;
 
+import java.util.Random;
+
 public class Main {
 
     public static void main(String[] args) {
@@ -14,8 +16,10 @@ public class Main {
 
     private static void run() {
 
-        Algorithm player1 = new RandomMinimax(true, 3, true);
-        Algorithm player2 = new RandomMinimax(false, 3, false);
+        Random r = new Random();
+
+        RandomMinimax player1 = new RandomMinimax(true, 3, true);
+        RandomMinimax player2 = new RandomMinimax(false, 3, false);
 
 //        Algorithm player1 = new Minimax(true);
 //        Algorithm player2 = new Human();
@@ -32,9 +36,15 @@ public class Main {
         System.out.println(player1.getClass().getSimpleName() + " vs " + player2.getClass().getSimpleName());
 
         Connect4 c4 = new Connect4();
-        c4.play(player1, player2);
 
-        player1.printResults();
+        while (true) {
+            c4.play(player1, player2);
+            c4.reset();
+            player1.setRandomCount(r.nextInt(5));
+            player2.setRandomCount(r.nextInt(5));
+        }
+
+        //player1.printResults();
         // player2.printResults();
     }
 }

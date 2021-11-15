@@ -9,7 +9,10 @@ public class RandomMinimax implements Algorithm {
     Minimax minimax;
 
     int randomCount;
+    public void setRandomCount(int randomCount) { this.randomCount = randomCount; }
+
     boolean collectData;
+
 
 
     public RandomMinimax(boolean isPlayerOne, int randomCount, boolean collectData) {

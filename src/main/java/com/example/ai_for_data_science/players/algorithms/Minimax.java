@@ -4,7 +4,7 @@ import com.example.ai_for_data_science.Algorithm;
 import com.example.ai_for_data_science.Connect4;
 
 public class Minimax implements Algorithm {
-    final int depth = 6; // -1 means infinite depth (this implementation is too slow for that ): )
+    final int depth = 5; // -1 means infinite depth (this implementation is too slow for that ): )
     int nodesExamined = 0;
     int branchesPruned = 0;
 
@@ -26,6 +26,7 @@ public class Minimax implements Algorithm {
         nodesExamined = 0;
         branchesPruned = 0;
         startTime = System.currentTimeMillis();
+        this.collectData = collectData;
     }
 
 

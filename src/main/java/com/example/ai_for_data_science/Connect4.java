@@ -271,20 +271,10 @@ public class Connect4 {
 
         BufferedWriter writer = new BufferedWriter(new FileWriter("gameData.csv", true));
 
-        String gameResult = "-";    // "t" - tie,  "w" - p1 win,  "l" - p1 lose
-        switch (evalGameFinished){
-            case 0:
-                gameResult = "t";
-                break;
-            case 1:
-                gameResult = "w";
-                break;
-            case 2:
-                gameResult = "l";
-                break;
-        }
+        int gameResult = evalGameFinished;
+        if (evalGameFinished == 2) { evalGameFinished = -1; }
 
-        writer.write(String.format("%s,%s\n", gameBoardToString(gameBoard), gameResult));
+        writer.write(String.format("%s,%s\n", gameBoardToString(gameBoard), evalGameFinished));
         writer.close();
     }
 

@@ -1,11 +1,9 @@
 package com.example.ai_for_data_science;
 
 
-import com.example.ai_for_data_science.players.algorithms.Human;
-import com.example.ai_for_data_science.players.algorithms.Minimax;
-import com.example.ai_for_data_science.players.algorithms.RandomMinimax;
-import com.example.ai_for_data_science.players.algorithms.RandomMove;
+import com.example.ai_for_data_science.players.algorithms.*;
 
+import java.io.IOException;
 import java.util.Random;
 
 public class Main {
@@ -18,31 +16,29 @@ public class Main {
 
         Random r = new Random();
 
-        RandomMinimax player1 = new RandomMinimax(true, 3, true);
-        RandomMinimax player2 = new RandomMinimax(false, 3, false);
+        try {
+            LinearRegression.preProcessData();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-//        Algorithm player1 = new Minimax(true);
-//        Algorithm player2 = new Human();
+//        RandomMinimax player1 = new RandomMinimax(true, 3, true);
+//        RandomMinimax player2 = new RandomMinimax(false, 3, false);
 
-//        Algorithm player1 = new Minimax(true);
-//        Algorithm player2 = new Minimax(false);
-
-//        Algorithm player1 = new Minimax(true);
+//        Algorithm player1 = new LinearRegression();
 //        Algorithm player2 = new RandomMove();
 
-//        Algorithm player1 = new RandomMove();
-//        Algorithm player2 = new Minimax(false);
 
-        System.out.println(player1.getClass().getSimpleName() + " vs " + player2.getClass().getSimpleName());
-
-        Connect4 c4 = new Connect4();
-
-        while (true) {
-            c4.play(player1, player2);
-            c4.reset();
-            player1.setRandomCount(r.nextInt(5));
-            player2.setRandomCount(r.nextInt(5));
-        }
+//        System.out.println(player1.getClass().getSimpleName() + " vs " + player2.getClass().getSimpleName());
+//
+//        Connect4 c4 = new Connect4();
+//
+//        while (true) {
+//            c4.play(player1, player2);
+//            c4.reset();
+//            player1.setRandomCount(r.nextInt(5));
+//            player2.setRandomCount(r.nextInt(5));
+//        }
 
         //player1.printResults();
         // player2.printResults();

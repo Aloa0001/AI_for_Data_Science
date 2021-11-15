@@ -271,7 +271,6 @@ public class Connect4 {
 
         BufferedWriter writer = new BufferedWriter(new FileWriter("gameData.csv", true));
 
-        int gameResult = evalGameFinished;
         if (evalGameFinished == 2) { evalGameFinished = -1; }
 
         writer.write(String.format("%s,%s\n", gameBoardToString(gameBoard), evalGameFinished));

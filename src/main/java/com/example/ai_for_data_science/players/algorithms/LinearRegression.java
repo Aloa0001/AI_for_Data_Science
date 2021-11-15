@@ -1,11 +1,12 @@
 package com.example.ai_for_data_science.players.algorithms;
+import com.example.ai_for_data_science.Algorithm;
+
+import java.io.*;
 import java.lang.Math;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Random;
+import java.util.*;
 
 
-public class LinearRegression {
+public class LinearRegression implements Algorithm {
 
     public LinearRegression(float[][] independentFeatures, float[] dependentFeature, float[] weights, float bias,
                             float learningRate, int iterations, int batchSize) {
@@ -35,13 +36,141 @@ public class LinearRegression {
         return bias;
     }
 
-    public void print() {
+
+    @Override
+    public int returnMove(int[] gameBoard) {
+        return 0;
+    }
+
+    @Override
+    public void printResults() {
         System.out.println("Linear Regression - Results:");
         System.out.println("  Weights: " + Arrays.toString(weights));
         System.out.println("  Bias: " + bias);
         System.out.println("  MSE: " + mseCost());
         System.out.println("  R²: " + Math.round(rSquared() * 100000.0f) / 1000.0f + "%");
     }
+
+
+    public static void preProcessData() throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter("fourCellEvals.csv", true));
+
+//        for (int i = 0; i < 42; i++) {      // for each cell
+//            int totalPlays = 0;
+//            int winsP1 = 0;
+//
+//            Scanner scanner = new Scanner(new File("gameData.csv"));
+//            while (scanner.hasNextLine()) {
+//                String line = scanner.nextLine();
+//                String gameResult = line.split(",")[1];
+//
+//                char cellValue = line.charAt(i);
+//                if (cellValue == '1') {
+//                    if (gameResult.equals("1")) {
+//                        ++winsP1;
+//                    }
+//                    ++totalPlays;
+//                }
+//            }
+//
+//            String winRate = totalPlays == 0 ? "" : String.valueOf((double)winsP1/totalPlays);
+//
+//            writer.write(String.format("%d,%d,%d,%s\n", i, i % 7, totalPlays, winRate));
+//        }
+//        writer.close();
+
+        ArrayList<Integer> fourCellEvals = new ArrayList<>();
+        ArrayList<Integer> wins = new ArrayList<>();
+        ArrayList<Integer> totalPlays = new ArrayList<>();
+
+        Scanner scanner = new Scanner(new File("gameData.csv"));
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            String[] data = line.split(",");
+
+            String gameBoardString = data[0];
+            String gameResult = data[1];
+
+            int[] gameBoard = new int[42];
+            for (int j = 0; j < gameBoardString.length(); j++) {
+                gameBoard[j] = Character.getNumericValue(gameBoardString.charAt(j));
+            }
+
+            int fourCellEval = fourCellEval(gameBoard);
+            int index;
+            if ((index = fourCellEvals.indexOf(fourCellEval)) != -1) {
+                if (gameResult.equals("1")) {
+                    wins.set(index, wins.get(index) + 1);
+                }
+                totalPlays.set(index, wins.get(index) + 1);
+            }
+            else {
+                fourCellEvals.add(fourCellEval);
+                wins.add(gameResult.equals("1") ? 1 : 0);
+                totalPlays.add(1);
+            }
+        }
+        for (int i = 0; i < fourCellEvals.size(); i++) {
+            String winRate = totalPlays.get(i) == 0 ? "" : String.valueOf((double)wins.get(i)/totalPlays.get(i));
+            writer.write(String.format("%d,%s\n", fourCellEvals.get(i), winRate));
+        }
+        writer.close();
+    }
+
+    /**
+     * Evaluates how good a not won/tied position is.
+     * Checks each combination of 4 tiles in a row, and sums the number of player1 discs - player2 discs
+     * This means the evaluation considers tiles used in multiple 4-in-a-row combinations as more valuable
+     */
+    private static int fourCellEval(int[] gameBoard) {
+        int fourCellEval = 0;
+
+        // Horizontal check
+        for (int row = 0; row < 6; row++) {
+            for (int col = 0; col < 7-3; col++) {
+                fourCellEval += remapCellValue(gameBoard[row * 7 + col]);
+                fourCellEval += remapCellValue(gameBoard[row * 7 + col + 1]);
+                fourCellEval += remapCellValue(gameBoard[row * 7 + col + 2]);
+                fourCellEval += remapCellValue(gameBoard[row * 7 + col + 3]);
+            }
+        }
+
+        // Vertical check
+        for (int col = 0; col < 7; col++) {
+            for (int row = 0; row < 6-3; row++) {
+                fourCellEval += remapCellValue(gameBoard[col + row * 7]);
+                fourCellEval += remapCellValue(gameBoard[col + (row + 1) * 7]);
+                fourCellEval += remapCellValue(gameBoard[col + (row + 2) * 7]);
+                fourCellEval += remapCellValue(gameBoard[col + (row + 3) * 7]);
+            }
+        }
+
+        // diagonal (down + left) check
+        for (int col = 3; col < 7; col++){
+            for (int row = 0; row < 6-3; row++){
+                fourCellEval += remapCellValue(gameBoard[col + row * 7]);
+                fourCellEval += remapCellValue(gameBoard[col - 1 + (row + 1) * 7]);
+                fourCellEval += remapCellValue(gameBoard[col - 2 + (row + 2) * 7]);
+                fourCellEval += remapCellValue(gameBoard[col - 3 + (row + 3) * 7]);
+            }
+        }
+
+        // diagonal (up + left) check
+        for (int col = 3; col < 7; col++){
+            for (int row = 3; row < 6; row++){
+                fourCellEval += remapCellValue(gameBoard[col + row * 7]);
+                fourCellEval += remapCellValue(gameBoard[col - 1 + (row - 1) * 7]);
+                fourCellEval += remapCellValue(gameBoard[col - 2 + (row - 2) * 7]);
+                fourCellEval += remapCellValue(gameBoard[col - 3 + (row - 3) * 7]);
+            }
+        }
+
+        return fourCellEval;
+    }
+    private static int remapCellValue(int value) {
+        return (value == 2) ? -1 : value;  // 0->0, 1->1, 2->-1
+    }
+
 
 
     private float[] predict() {
@@ -170,5 +299,4 @@ public class LinearRegression {
         }
         return sum;
     }
-
 }

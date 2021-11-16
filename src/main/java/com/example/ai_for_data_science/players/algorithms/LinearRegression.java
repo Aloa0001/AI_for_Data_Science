@@ -1,5 +1,6 @@
 package com.example.ai_for_data_science.players.algorithms;
 import com.example.ai_for_data_science.Algorithm;
+import com.example.ai_for_data_science.Connect4;
 
 import java.io.*;
 import java.lang.Math;
@@ -9,7 +10,7 @@ import java.util.*;
 public class LinearRegression implements Algorithm {
 
     public LinearRegression(float[][] independentFeatures, float[] dependentFeature, float[] weights, float bias,
-                            float learningRate, int iterations, int batchSize) {
+                            float learningRate, int iterations, int batchSize, boolean isPlayerOne) {
         this.independentFeatures = independentFeatures;
         this.dependentFeature = dependentFeature;
         this.weights = weights;
@@ -17,21 +18,49 @@ public class LinearRegression implements Algorithm {
         this.learningRate = learningRate;
         this.iterations = iterations;
         this.batchSize = batchSize;
+
+        this.isPlayerOne = isPlayerOne;
     }
 
-//    public LinearRegression() {
-//        Scanner scanner = null;
-//        try {
-//            scanner = new Scanner(new File("winRates.csv"));
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        }
-//        while (scanner.hasNextLine()) {
-//            String line = scanner.nextLine();
-//            String[] data = line.split(",");
-//
-//        }
-//    }
+    public LinearRegression(float learningRate, int iterations, int batchSize, boolean isPlayerOne) {
+        Scanner scanner = null;
+        try {
+            scanner = new Scanner(new File("winRates.csv"));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        float[][] independentFeatures = new float[42][];
+        float[] dependentFeature = new float[42];
+        float[] weights = new float[42];
+
+        int c = 0;
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            String[] data = line.split(",");
+
+            float[] artificialGameBoard = new float[42];
+            for (int i = 0; i < 42; i++) {
+                artificialGameBoard[i] = Integer.parseInt(data[i]);
+            }
+            float winRate = Float.parseFloat(data[42]);
+
+            dependentFeature[c] = winRate;
+            independentFeatures[c] = artificialGameBoard;
+            ++c;
+        }
+
+        this.independentFeatures = independentFeatures;
+        this.dependentFeature = dependentFeature;
+        this.weights = weights;
+        this.bias = 0.0f;
+        this.learningRate = learningRate;
+        this.iterations = iterations;
+        this.batchSize = batchSize;
+
+        this.isPlayerOne = isPlayerOne;
+
+        train();
+    }
 
     private final float[][] independentFeatures;
     private final float[] dependentFeature;
@@ -42,7 +71,6 @@ public class LinearRegression implements Algorithm {
     private final int iterations;
     private final int batchSize;
 
-
     public float[] getWeights() {
         return weights;
     }
@@ -50,10 +78,32 @@ public class LinearRegression implements Algorithm {
         return bias;
     }
 
+    private boolean isPlayerOne;
+
 
     @Override
     public int returnMove(int[] gameBoard) {
-        return 0;
+
+        float bestPredictedWinRate = 0;
+        int bestMoveCol = 0;
+
+        for (int m : Connect4.getAvailableMoves(gameBoard)) {
+
+            int[] nextGameBoard = Connect4.nextGameBoard(gameBoard, m, isPlayerOne);
+            float[] nextGameBoard_f = new float[nextGameBoard.length];
+            for (int i = 0 ; i < nextGameBoard.length; i++) {
+                nextGameBoard_f[i] = (float)nextGameBoard[i];
+            }
+
+            float predictedWinRate = predict(nextGameBoard_f);
+
+            if (predictedWinRate > bestPredictedWinRate) {
+                bestPredictedWinRate = predictedWinRate;
+                bestMoveCol = m;
+            }
+        }
+
+        return bestMoveCol;
     }
 
     @Override

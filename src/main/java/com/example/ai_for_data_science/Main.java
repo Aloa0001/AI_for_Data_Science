@@ -3,8 +3,6 @@ package com.example.ai_for_data_science;
 
 import com.example.ai_for_data_science.players.algorithms.*;
 
-import java.io.IOException;
-import java.util.Random;
 
 public class Main {
 
@@ -14,33 +12,18 @@ public class Main {
 
     private static void run() {
 
-        Random r = new Random();
-
-        try {
-            LinearRegression.preProcessData();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-//        RandomMinimax player1 = new RandomMinimax(true, 3, true);
-//        RandomMinimax player2 = new RandomMinimax(false, 3, false);
-
-//        Algorithm player1 = new LinearRegression();
-//        Algorithm player2 = new RandomMove();
+        Algorithm player1 = new LinearRegression(0.001f, 10000, 42, true);
+        //Algorithm player2 = new Minimax(false, 5);
+        Algorithm player2 = new Human();
 
 
-//        System.out.println(player1.getClass().getSimpleName() + " vs " + player2.getClass().getSimpleName());
-//
-//        Connect4 c4 = new Connect4();
-//
-//        while (true) {
-//            c4.play(player1, player2);
-//            c4.reset();
-//            player1.setRandomCount(r.nextInt(5));
-//            player2.setRandomCount(r.nextInt(5));
-//        }
+        System.out.println(player1.getClass().getSimpleName() + " vs " + player2.getClass().getSimpleName());
 
-        //player1.printResults();
-        // player2.printResults();
+        Connect4 c4 = new Connect4();
+
+        c4.play(player1, player2);
+
+        player1.printResults();
+        player2.printResults();
     }
 }

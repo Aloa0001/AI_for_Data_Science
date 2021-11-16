@@ -41,7 +41,7 @@ public class Connect4 {
 
             if (validateMove(gameBoard, moveCol)) {
                 performMove(moveCol, isPlayerOne);
-                //moveOrder.add(moveCol);
+                moveOrder.add(moveCol);
             }
             else {
                 try {
@@ -57,9 +57,9 @@ public class Connect4 {
 
 
         // The game has finished!
-//        System.out.println("\nGame is over! Result: " + gameIsFinished);
-//        printGameBoard(gameBoard);
-//        System.out.println("Move order: " + moveOrder.toString());
+        System.out.println("\nGame is over! Result: " + gameIsFinished);
+        printGameBoard(gameBoard);
+        System.out.println("Move order: " + moveOrder.toString());
     }
 
 

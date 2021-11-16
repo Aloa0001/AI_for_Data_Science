@@ -19,6 +19,10 @@ public class LinearRegression implements Algorithm {
         this.batchSize = batchSize;
     }
 
+//    public LinearRegression() {
+//
+//    }
+
     private final float[][] independentFeatures;
     private final float[] dependentFeature;
     private float[] weights;
@@ -53,124 +57,39 @@ public class LinearRegression implements Algorithm {
 
 
     public static void preProcessData() throws IOException {
-        BufferedWriter writer = new BufferedWriter(new FileWriter("fourCellEvals.csv", true));
+        BufferedWriter writer = new BufferedWriter(new FileWriter("winRates.csv", true));
 
-//        for (int i = 0; i < 42; i++) {      // for each cell
-//            int totalPlays = 0;
-//            int winsP1 = 0;
-//
-//            Scanner scanner = new Scanner(new File("gameData.csv"));
-//            while (scanner.hasNextLine()) {
-//                String line = scanner.nextLine();
-//                String gameResult = line.split(",")[1];
-//
-//                char cellValue = line.charAt(i);
-//                if (cellValue == '1') {
-//                    if (gameResult.equals("1")) {
-//                        ++winsP1;
-//                    }
-//                    ++totalPlays;
-//                }
-//            }
-//
-//            String winRate = totalPlays == 0 ? "" : String.valueOf((double)winsP1/totalPlays);
-//
-//            writer.write(String.format("%d,%d,%d,%s\n", i, i % 7, totalPlays, winRate));
-//        }
-//        writer.close();
+        for (int i = 0; i < 42; i++) {      // for each cell
+            double totalPlays = 0.0d;
+            int totalP1Plays = 0;
+            int winsP1 = 0;
 
-        ArrayList<Integer> fourCellEvals = new ArrayList<>();
-        ArrayList<Integer> wins = new ArrayList<>();
-        ArrayList<Integer> totalPlays = new ArrayList<>();
+            Scanner scanner = new Scanner(new File("gameData.csv"));
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String gameResult = line.split(",")[1];
 
-        Scanner scanner = new Scanner(new File("gameData.csv"));
-        while (scanner.hasNextLine()) {
-            String line = scanner.nextLine();
-            String[] data = line.split(",");
-
-            String gameBoardString = data[0];
-            String gameResult = data[1];
-
-            int[] gameBoard = new int[42];
-            for (int j = 0; j < gameBoardString.length(); j++) {
-                gameBoard[j] = Character.getNumericValue(gameBoardString.charAt(j));
-            }
-
-            int fourCellEval = fourCellEval(gameBoard);
-            int index;
-            if ((index = fourCellEvals.indexOf(fourCellEval)) != -1) {
-                if (gameResult.equals("1")) {
-                    wins.set(index, wins.get(index) + 1);
+                char cellValue = line.charAt(i);
+                if (cellValue == '1') {
+                    if (gameResult.equals("1")) {
+                        ++winsP1;
+                    }
+                    ++totalP1Plays;
                 }
-                totalPlays.set(index, wins.get(index) + 1);
+                if (cellValue == '1' || cellValue == '2') {
+                    double nominator = ((i / 7) * 7);
+                    nominator = nominator == 0 ? 1 : nominator;
+                    totalPlays += (double)1 / nominator;
+                }
             }
-            else {
-                fourCellEvals.add(fourCellEval);
-                wins.add(gameResult.equals("1") ? 1 : 0);
-                totalPlays.add(1);
-            }
-        }
-        for (int i = 0; i < fourCellEvals.size(); i++) {
-            String winRate = totalPlays.get(i) == 0 ? "" : String.valueOf((double)wins.get(i)/totalPlays.get(i));
-            writer.write(String.format("%d,%s\n", fourCellEvals.get(i), winRate));
+
+            String winRate = totalP1Plays == 0 ? "" : String.valueOf((double)winsP1/totalP1Plays);
+
+            String totalPlays_s = String.valueOf(totalPlays);
+            writer.write(String.format("%d,%d,%d,%s,%s\n", i, i % 7, totalP1Plays, totalPlays_s, winRate));
         }
         writer.close();
     }
-
-    /**
-     * Evaluates how good a not won/tied position is.
-     * Checks each combination of 4 tiles in a row, and sums the number of player1 discs - player2 discs
-     * This means the evaluation considers tiles used in multiple 4-in-a-row combinations as more valuable
-     */
-    private static int fourCellEval(int[] gameBoard) {
-        int fourCellEval = 0;
-
-        // Horizontal check
-        for (int row = 0; row < 6; row++) {
-            for (int col = 0; col < 7-3; col++) {
-                fourCellEval += remapCellValue(gameBoard[row * 7 + col]);
-                fourCellEval += remapCellValue(gameBoard[row * 7 + col + 1]);
-                fourCellEval += remapCellValue(gameBoard[row * 7 + col + 2]);
-                fourCellEval += remapCellValue(gameBoard[row * 7 + col + 3]);
-            }
-        }
-
-        // Vertical check
-        for (int col = 0; col < 7; col++) {
-            for (int row = 0; row < 6-3; row++) {
-                fourCellEval += remapCellValue(gameBoard[col + row * 7]);
-                fourCellEval += remapCellValue(gameBoard[col + (row + 1) * 7]);
-                fourCellEval += remapCellValue(gameBoard[col + (row + 2) * 7]);
-                fourCellEval += remapCellValue(gameBoard[col + (row + 3) * 7]);
-            }
-        }
-
-        // diagonal (down + left) check
-        for (int col = 3; col < 7; col++){
-            for (int row = 0; row < 6-3; row++){
-                fourCellEval += remapCellValue(gameBoard[col + row * 7]);
-                fourCellEval += remapCellValue(gameBoard[col - 1 + (row + 1) * 7]);
-                fourCellEval += remapCellValue(gameBoard[col - 2 + (row + 2) * 7]);
-                fourCellEval += remapCellValue(gameBoard[col - 3 + (row + 3) * 7]);
-            }
-        }
-
-        // diagonal (up + left) check
-        for (int col = 3; col < 7; col++){
-            for (int row = 3; row < 6; row++){
-                fourCellEval += remapCellValue(gameBoard[col + row * 7]);
-                fourCellEval += remapCellValue(gameBoard[col - 1 + (row - 1) * 7]);
-                fourCellEval += remapCellValue(gameBoard[col - 2 + (row - 2) * 7]);
-                fourCellEval += remapCellValue(gameBoard[col - 3 + (row - 3) * 7]);
-            }
-        }
-
-        return fourCellEval;
-    }
-    private static int remapCellValue(int value) {
-        return (value == 2) ? -1 : value;  // 0->0, 1->1, 2->-1
-    }
-
 
 
     private float[] predict() {

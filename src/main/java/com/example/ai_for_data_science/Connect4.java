@@ -215,49 +215,6 @@ public class Connect4 {
 
 
 
-//    public  static void collectData(int[] gameBoard, int evalGameFinished) throws IOException {
-//        String gameBoardRepresentation = gameBoardToString(gameBoard);
-//
-//        Scanner scanner = new Scanner(new File("gameData.csv"));
-//        int i = 0;
-//        boolean found = false;
-//        while (scanner.hasNextLine()) {
-//            String line = scanner.nextLine();
-//            if (line.contains(gameBoardRepresentation + ",")) {
-//                found = true;
-//                break;
-//            }
-//            ++i;
-//        }
-//
-//        BufferedWriter writer = new BufferedWriter(new FileWriter("gameData.csv", true));
-//
-//        int playerOneWins = 0, playerOneLosses = 0, totalGames = 1;
-//
-//        if (found) {
-//            try (Stream<String> lines = Files.lines(Paths.get("gameData.csv"))) {
-//                String line_i = lines.skip(i).findFirst().get();
-//
-//                String[] rows = line_i.split(",");
-//                playerOneWins = Integer.parseInt(rows[1]);
-//                playerOneLosses = Integer.parseInt(rows[2]);
-//                totalGames = Integer.parseInt(rows[3]);
-//
-//                if (evalGameFinished == 1) playerOneWins++;
-//                else playerOneLosses++;
-//                totalGames++;
-//            }
-//        }
-//        else {
-//
-//            if (evalGameFinished == 1) playerOneWins = 1;
-//            else playerOneLosses = 1;
-//        }
-//
-//        writer.write(String.format("%s,%d,%d,%d\n", gameBoardToString(gameBoard), playerOneWins, playerOneLosses, totalGames));
-//        writer.close();
-//    }
-
     public  static void collectData(int[] gameBoard, int evalGameFinished) throws IOException {
         String gameBoardRepresentation = gameBoardToString(gameBoard);
 

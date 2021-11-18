@@ -9,7 +9,9 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 
 public class Connect4 {
 
@@ -211,27 +213,6 @@ public class Connect4 {
         }
 
         return 0; // if no player has won, and no more tiles can be placed => game resulted in a tie
-    }
-
-
-
-    public  static void collectData(int[] gameBoard, int evalGameFinished) throws IOException {
-        String gameBoardRepresentation = gameBoardToString(gameBoard);
-
-        Scanner scanner = new Scanner(new File("gameData.csv"));
-        while (scanner.hasNextLine()) {
-            String line = scanner.nextLine();
-            if (line.contains(gameBoardRepresentation + ",")) {
-                return;
-            }
-        }
-
-        BufferedWriter writer = new BufferedWriter(new FileWriter("gameData.csv", true));
-
-        if (evalGameFinished == 2) { evalGameFinished = -1; }
-
-        writer.write(String.format("%s,%s\n", gameBoardToString(gameBoard), evalGameFinished));
-        writer.close();
     }
 
 }

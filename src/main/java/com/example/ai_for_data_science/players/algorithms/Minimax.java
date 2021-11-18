@@ -2,6 +2,7 @@ package com.example.ai_for_data_science.players.algorithms;
 
 import com.example.ai_for_data_science.Algorithm;
 import com.example.ai_for_data_science.Connect4;
+import com.example.ai_for_data_science.DataSet;
 
 public class Minimax implements Algorithm {
     int depth; // -1 means infinite depth (this implementation is too slow for that ): )
@@ -66,7 +67,7 @@ public class Minimax implements Algorithm {
 
             if (collectData) {
                 try {
-                    Connect4.collectData(gameBoard, evalGameFinished);
+                    DataSet.collectData(gameBoard, evalGameFinished);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

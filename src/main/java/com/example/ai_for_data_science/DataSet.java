@@ -3,6 +3,7 @@ package com.example.ai_for_data_science;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Scanner;
 
 public class DataSet {
@@ -46,13 +47,20 @@ public class DataSet {
         testData_gameBoards = new int[testDataLength][];
         testData_results = new int[testDataLength];
 
+        ArrayList<Integer> indexList = new ArrayList<>(gameBoards.size());
+
+        for (int i = 0; i < gameBoards.size(); i++) {
+            indexList.add(i);
+        }
+        Collections.shuffle(indexList);
+
         for (int i = 0; i < trainDataLength; i++) {
-            trainData_gameBoards[i] = gameBoards.get(i);
-            trainData_results[i] = results.get(i);
+            trainData_gameBoards[i] = gameBoards.get(indexList.get(i));
+            trainData_results[i] = results.get(indexList.get(i));
         }
         for (int i = trainDataLength; i < testDataLength + trainDataLength; i++) {
-            testData_gameBoards[i-trainDataLength] = gameBoards.get(i);
-            testData_results[i-trainDataLength] = results.get(i);
+            testData_gameBoards[i-trainDataLength] = gameBoards.get(indexList.get(i));
+            testData_results[i-trainDataLength] = results.get(indexList.get(i));
         }
     }
 

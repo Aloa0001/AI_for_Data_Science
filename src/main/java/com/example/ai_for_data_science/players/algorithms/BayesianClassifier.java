@@ -13,6 +13,7 @@ public class BayesianClassifier implements Algorithm {
 
     public BayesianClassifier(DataSet dataSet, boolean isPlayerOne) {
         this.dataSet = dataSet;
+        this.isPlayerOne = isPlayerOne;
     }
 
 

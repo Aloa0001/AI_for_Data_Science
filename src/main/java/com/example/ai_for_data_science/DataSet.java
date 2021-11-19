@@ -12,6 +12,8 @@ public class DataSet {
     public int[] results;
 
     public ArrayList<int[]> winning_gameBoards;
+    public ArrayList<int[]> losing_gameBoards;
+    public ArrayList<int[]> tie_gameBoards;
 
     public int[][] trainData_gameBoards;
     public int[] trainData_results;
@@ -83,11 +85,19 @@ public class DataSet {
         }
     }
 
-    public void generateWinSet() {
+    public void generateWinLoseTieSets() {
         winning_gameBoards = new ArrayList<>();
+        losing_gameBoards = new ArrayList<>();
+        tie_gameBoards = new ArrayList<>();
         for (int i = 0; i < gameBoards.length; i++) {
             if (results[i] == 1) {
                 winning_gameBoards.add(gameBoards[i]);
+            }
+            else if (results[i] == -1) {
+                losing_gameBoards.add(gameBoards[i]);
+            }
+            else if (results[i] == 0) {
+                tie_gameBoards.add(gameBoards[i]);
             }
         }
     }

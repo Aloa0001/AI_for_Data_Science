@@ -20,7 +20,8 @@ public class Main {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        dataSet.generateWinSet();
+        dataSet.generateTrainTestSets();
+        dataSet.generateWinLoseTieSets();
 
 
         Algorithm player1 = new BayesianClassifier(dataSet, true);

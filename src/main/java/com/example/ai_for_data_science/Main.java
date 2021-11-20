@@ -25,10 +25,11 @@ public class Main {
 
 
         Algorithm player1 = new BayesianClassifier(dataSet, true);
+        Algorithm player2 = new SVM(dataSet);
         //Algorithm player2 = new LinearRegression(0.001f, 10000, 42, false);
         //Algorithm player2 = new Minimax(false, 5);
         //Algorithm player2 = new Human();
-        Algorithm player2 = new RandomMove();
+        //Algorithm player2 = new RandomMove();
 
 
         System.out.println(player1.getClass().getSimpleName() + " vs " + player2.getClass().getSimpleName());

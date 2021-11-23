@@ -9,6 +9,9 @@ import java.util.*;
 
 public class LinearRegression implements Algorithm {
 
+    double winningRate = 0;
+    double speedWinningRate = 0;
+
     public LinearRegression(float[][] independentFeatures, float[] dependentFeature, float[] weights, float bias,
                             float learningRate, int iterations, int batchSize, boolean isPlayerOne) {
         this.independentFeatures = independentFeatures;
@@ -313,5 +316,21 @@ public class LinearRegression implements Algorithm {
             sum += arr1[i];
         }
         return sum;
+    }
+
+    public double getWinningRate() {
+        return winningRate;
+    }
+
+    public void setWinningRate(double winningRate) {
+        this.winningRate = winningRate;
+    }
+
+    public double getSpeedWinningRate() {
+        return speedWinningRate;
+    }
+
+    public void setSpeedWinningRate(double speedWinningRate) {
+        this.speedWinningRate = speedWinningRate;
     }
 }

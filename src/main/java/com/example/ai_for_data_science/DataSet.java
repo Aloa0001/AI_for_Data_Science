@@ -28,7 +28,7 @@ public class DataSet {
         ArrayList<int[]> gameBoards = new ArrayList<>();
         ArrayList<Integer> results = new ArrayList<>();
 
-        Scanner scanner = new Scanner(new File("gameData.csv"));
+        Scanner scanner = new Scanner(new File(".csv/gameData.csv"));
         while (scanner.hasNextLine()) {
 
             int[] gameBoard = new int[42];
@@ -105,7 +105,7 @@ public class DataSet {
     public static void collectData(int[] gameBoard, int evalGameFinished) throws IOException {
         String gameBoardRepresentation = Connect4.gameBoardToString(gameBoard);
 
-        Scanner scanner = new Scanner(new File("gameData.csv"));
+        Scanner scanner = new Scanner(new File(".csv/gameData.csv"));
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
             if (line.contains(gameBoardRepresentation + ",")) {
@@ -113,7 +113,7 @@ public class DataSet {
             }
         }
 
-        BufferedWriter writer = new BufferedWriter(new FileWriter("gameData.csv", true));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(".csv/gameData.csv", true));
 
         if (evalGameFinished == 2) { evalGameFinished = -1; }
 

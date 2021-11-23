@@ -8,6 +8,9 @@ import java.util.Random;
 
 public class RandomMove implements Algorithm {
 
+    double winningRate = 0;
+    double speedWinningRate = 0;
+
     Random random = new Random();
 
     @Override
@@ -21,5 +24,20 @@ public class RandomMove implements Algorithm {
 
     }
 
+    public double getWinningRate() {
+        return winningRate;
+    }
+
+    public void setWinningRate(double winningRate) {
+        this.winningRate = winningRate;
+    }
+
+    public double getSpeedWinningRate() {
+        return speedWinningRate;
+    }
+
+    public void setSpeedWinningRate(double speedWinningRate) {
+        this.speedWinningRate = speedWinningRate;
+    }
 }
 

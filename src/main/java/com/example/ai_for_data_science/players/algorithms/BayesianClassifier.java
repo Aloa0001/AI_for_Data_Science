@@ -9,13 +9,14 @@ public class BayesianClassifier implements Algorithm {
 
     DataSet dataSet;
     boolean isPlayerOne;
+    double winningRate = 0;
+    double speedWinningRate = 0;
 
 
     public BayesianClassifier(DataSet dataSet, boolean isPlayerOne) {
         this.dataSet = dataSet;
         this.isPlayerOne = isPlayerOne;
     }
-
 
     @Override
     public int returnMove(int[] gameBoard) {
@@ -123,4 +124,19 @@ public class BayesianClassifier implements Algorithm {
         return (float)correctClassifications / totalClassifications;
     }
 
+    public double getWinningRate() {
+        return winningRate;
+    }
+
+    public void setWinningRate(double winningRate) {
+        this.winningRate = winningRate;
+    }
+
+    public double getSpeedWinningRate() {
+        return speedWinningRate;
+    }
+
+    public void setSpeedWinningRate(double speedWinningRate) {
+        this.speedWinningRate = speedWinningRate;
+    }
 }

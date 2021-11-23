@@ -2,6 +2,7 @@ package com.example.ai_for_data_science;
 
 
 import com.example.ai_for_data_science.players.algorithms.*;
+import com.example.ai_for_data_science.players.algorithms.svm.SVM;
 
 import java.io.FileNotFoundException;
 
@@ -25,12 +26,12 @@ public class Main {
 
 
         Algorithm player1 = new BayesianClassifier(dataSet, true);
-        Algorithm player2 = new SVM(dataSet);
         //Algorithm player2 = new LinearRegression(0.001f, 10000, 42, false);
         //Algorithm player2 = new Minimax(false, 5);
-        //Algorithm player2 = new Human();
+        Algorithm player2 = new Human();
         //Algorithm player2 = new RandomMove();
 
+        SVM svm = player1 instanceof BayesianClassifier && player2 instanceof Human ? new SVM() : null;
 
         System.out.println(player1.getClass().getSimpleName() + " vs " + player2.getClass().getSimpleName());
 

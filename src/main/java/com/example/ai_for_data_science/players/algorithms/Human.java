@@ -7,6 +7,9 @@ import java.util.Scanner;
 
 public class Human implements Algorithm {
 
+    double winningRate = 0;
+    double speedWinningRate = 0;
+
     @Override
     public int returnMove(int[] gameBoard) {
 
@@ -43,5 +46,21 @@ public class Human implements Algorithm {
     @Override
     public void printResults() {
 
+    }
+
+    public double getWinningRate() {
+        return winningRate;
+    }
+
+    public void setWinningRate(double winningRate) {
+        this.winningRate = winningRate;
+    }
+
+    public double getSpeedWinningRate() {
+        return speedWinningRate;
+    }
+
+    public void setSpeedWinningRate(double speedWinningRate) {
+        this.speedWinningRate = speedWinningRate;
     }
 }

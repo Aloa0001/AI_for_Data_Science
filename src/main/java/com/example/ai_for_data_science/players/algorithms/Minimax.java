@@ -5,6 +5,10 @@ import com.example.ai_for_data_science.Connect4;
 import com.example.ai_for_data_science.DataSet;
 
 public class Minimax implements Algorithm {
+
+    double winningRate = 0;
+    double speedWinningRate = 0;
+
     int depth; // -1 means infinite depth (this implementation is too slow for that ): )
     int nodesExamined = 0;
     int branchesPruned = 0;
@@ -189,5 +193,21 @@ public class Minimax implements Algorithm {
 
     private int remapCellValue(int value) {
         return (value == 2) ? -1 : value;  // 0->0, 1->1, 2->-1
+    }
+
+    public double getWinningRate() {
+        return winningRate;
+    }
+
+    public void setWinningRate(double winningRate) {
+        this.winningRate = winningRate;
+    }
+
+    public double getSpeedWinningRate() {
+        return speedWinningRate;
+    }
+
+    public void setSpeedWinningRate(double speedWinningRate) {
+        this.speedWinningRate = speedWinningRate;
     }
 }

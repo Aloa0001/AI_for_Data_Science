@@ -47,8 +47,8 @@ public class SVM {
     }
 
     public void train() {
-        double[][][] trainingSet = getTrainingDataSet();
-        //double[][][] trainingSet = trainingDataSet;
+        //double[][][] trainingSet = getTrainingDataSet();
+        double[][][] trainingSet = trainingDataSet;
         double[][] features = new double[trainingSet.length][2];
         double[][] labels = new double[trainingSet.length][1];
 
@@ -107,8 +107,8 @@ public class SVM {
 //        return trainingData;
     }
 
-    public static void main(String[] args) {
-        new SVM();
-    }
+//    public static void main(String[] args) {
+//        new SVM();
+//    }
 }
 

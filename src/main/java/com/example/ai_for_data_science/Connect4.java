@@ -6,6 +6,7 @@ import com.example.ai_for_data_science.players.algorithms.Human;
 import com.example.ai_for_data_science.players.algorithms.svm.AlgorithmsWinningScores;
 import com.example.ai_for_data_science.players.algorithms.svm.ScorePlayers;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -79,7 +80,11 @@ public class Connect4 {
         double p2WinScore = (2 * hScores[0] + (isP1Winning ? 1 : -1))/2;
         aS.fillAlgoScores("BayesianClassifier", new double[]{p1WinScore, p1Speed});
         aS.fillAlgoScores("Human", new double[]{p2WinScore, p2Speed});
-        sP.addNewRecord(new double[]{(p1Speed +p1WinScore)/2, (p2Speed +p2WinScore)/2}, (isP1Winning ? 1 : -1));
+        try {
+            sP.addNewRecord(new double[]{(p1Speed +p1WinScore)/2, (p2Speed +p2WinScore)/2}, (isP1Winning ? 1 : -1));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 

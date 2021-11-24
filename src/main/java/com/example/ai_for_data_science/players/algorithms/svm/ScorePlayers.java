@@ -3,6 +3,7 @@ package com.example.ai_for_data_science.players.algorithms.svm;
 import java.io.*;
 import java.util.*;
 
+import com.example.ai_for_data_science.Connect4;
 import com.example.ai_for_data_science.players.algorithms.svm.AlgorithmsWinningScores;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
@@ -31,18 +32,18 @@ public class ScorePlayers {
     // append the record to svmTrainingData.csv - remove the older than 100 records
     // {{(winningScoreBC + winningSpedScoreBC)/2, (winningScoreH + winningSpedScoreH)/2},{1/-1}}
 
-/*    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         //algScores = new AlgorithmsWinningScores();
         addNewRecord(new double[]{6.345, 6.435}, -1);
 
-        double[][][] trainingData = getTrainingData();
-        for (double[][] row : trainingData) {
-            System.out.println(Arrays.deepToString(row));
-        }
+//        double[][][] trainingData = getTrainingData();
+//        for (double[][] row : trainingData) {
+//            System.out.println(Arrays.deepToString(row));
+//        }
+//
+//        updatePlayersScore(new double[][]{{4.55, 0.44}, {3.45, 0.33}});
 
-        updatePlayersScore(new double[][]{{4.55, 0.44}, {3.45, 0.33}});
-
-    }*/
+    }
 
     public static double[][][] getTrainingData() {
         reduceDataSet();
@@ -85,30 +86,27 @@ public class ScorePlayers {
     }
 
 
-    public void addNewRecord(double[] scores, int label) {
-        String gameBoardRepresentation = Arrays.toString(scores);
-
-        try (Scanner scanner = new Scanner(new File(".csv/svmTrainingData.csv"))) {
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                if (line.contains(gameBoardRepresentation + ",")) {
-                    return;
-                }
+    public static void addNewRecord(double[] scores, int label) throws IOException {
+        String features = Arrays.toString(scores);
+        Scanner scanner = new Scanner(new File(".csv/svmTrainingData.csv"));
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            if (line.contains(features + ",")) {
+                return;
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         }
 
+        BufferedWriter writer = new BufferedWriter(new FileWriter(".csv/svmTrainingData.csv", true));
 
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(".csv/svmTrainingData.csv", true))) {
-            writer.write(String.format("%s,%s\n", Arrays.toString(scores), label));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+        writer.write(String.format("%s,%s\n", features, label));
+        writer.close();
+
     }
-    public static void updatePlayersScore(double[][] newScores){
+
+    public static void updatePlayersScore(double[][] newScores) {
         String[] algNames = new String[]{"BayesianClassifier", "Human"};
-        for(int i = 0; i < newScores.length; i++){
+        for (int i = 0; i < newScores.length; i++) {
             algScores.fillAlgoScores(algNames[i], newScores[i]);
         }
     }

@@ -13,19 +13,6 @@ public class SVM {
     private AlgorithmsWinningScores algScores;
 
     private SupportVectorMachine svm = null;
-    static double[][][] trainingDataSet =
-            {
-                    {{1.1789285714285713, 1.6170238095238096}, {-1}},
-                    {{1.090892857142857, 1.0250238095238096}, {-1}},
-                    {{0.8719940476190476, 1.4050714285714285}, {1}},
-                    {{0.488735119047619, 0.7267976190476191}, {-1}},
-                    {{0.4607961309523809, 0.919797619047619}, {1}},
-                    {{0.509326636904762, 0.6699464285714286}, {1}},
-                    {{0.5607552083333334, 0.6075208333333333}, {1}},
-                    {{0.5850204613095238, 0.6388080357142857}, {1}},
-                    {{0.33120070684523806, 0.3899520089285714},{-1}},
-                    {{0.420258556547619, 0.5383802083333333}, {-1}}
-            };
 
     public SVM() {
         this.scorePlayers = new ScorePlayers();
@@ -48,7 +35,8 @@ public class SVM {
 
     public void train() {
         //double[][][] trainingSet = getTrainingDataSet();
-        double[][][] trainingSet = trainingDataSet;
+        TrainingData trainingData = new TrainingData();
+        double[][][] trainingSet = trainingData.returnTrainingDataSet();
         double[][] features = new double[trainingSet.length][2];
         double[][] labels = new double[trainingSet.length][1];
 

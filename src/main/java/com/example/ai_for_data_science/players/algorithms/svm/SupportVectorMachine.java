@@ -53,9 +53,9 @@ public class SupportVectorMachine {
                 // αj = -αj + y2(firstAlphaError - secondAlphaError)/η
                 // αj_clipped = (H , if αj >= H) || (αj , if L < αj < H) || (L, if αj <= L)  --- clipping alphaJ
                 // αi = αi + y1*y2*(αj - αj_clipped) --- use the clipped alphaJ to optimize alphaI
-                double η = x.getRowMatrix(i).multiply(x.getRowMatrix(j).transpose()).scalarMultiply(2.0).getEntry(0, 0)
-                        - x.getRowMatrix(i).multiply(x.getRowMatrix(i).transpose()).getEntry(0, 0)
-                        - x.getRowMatrix(j).multiply(x.getRowMatrix(j).transpose()).getEntry(0, 0);
+                double η = x.getRowMatrix(i).multiply(x.getRowMatrix(j).transpose()).scalarMultiply(2.0).getEntry(0, 0) // 2x1 . x2
+                        - x.getRowMatrix(i).multiply(x.getRowMatrix(i).transpose()).getEntry(0, 0)  // - x1 . x1
+                        - x.getRowMatrix(j).multiply(x.getRowMatrix(j).transpose()).getEntry(0, 0); // - x2 . x2
 
                 if (bounds[0] != bounds[1] && η < 0) {
                     if (optimizeAlphaPair(i, j, firstAlphaError.getEntry(0, 0), secondAlphaError.getEntry(0, 0), η, bounds, αi, αj)) {
@@ -129,17 +129,20 @@ public class SupportVectorMachine {
     }
 
     private void optimizeB(double firstAlphaError, double secondAlphaError, double αi, double αj, int i, int j) {
-        double b1 = b - firstAlphaError - multiplyTwoMatrices(y.getRowMatrix(i), α.getRowMatrix(i).scalarAdd(-αi)).
-                multiply(x.getRowMatrix(i).multiply(x.getRowMatrix(i).transpose())).getEntry(0, 0)
-                - multiplyTwoMatrices(y.getRowMatrix(j), α.getRowMatrix(j).scalarAdd(-αj)).
-                multiply(x.getRowMatrix(i).multiply(x.getRowMatrix(j).transpose())).getEntry(0, 0);
-        double b2 = b - secondAlphaError - multiplyTwoMatrices(y.getRowMatrix(i), α.getRowMatrix(i).scalarAdd(-αi)).
-                multiply(x.getRowMatrix(i).multiply(x.getRowMatrix(j).transpose())).getEntry(0, 0)
-                - multiplyTwoMatrices(y.getRowMatrix(j), α.getRowMatrix(j).scalarAdd(-αj)).
-                multiply(x.getRowMatrix(j).multiply(x.getRowMatrix(j).transpose())).getEntry(0, 0);
+
+        double b1 = computeB(firstAlphaError, αi, αj, i, j, x.getRowMatrix(i));
+        double b2 = computeB(secondAlphaError, αi, αj, i, j, x.getRowMatrix(j));
+
         if (0 < α.getRowMatrix(i).getEntry(0, 0) && SOFT_PARAM_C > α.getRowMatrix(i).getEntry(0, 0)) b = b1;
         else if (0 < α.getRowMatrix(j).getEntry(0, 0) && SOFT_PARAM_C > α.getRowMatrix(j).getEntry(0, 0)) b = b2;
         else b = (b1 + b2) / 2.0;
+    }
+
+    private double computeB(double alphaError, double αi, double αj, int i, int j, RealMatrix rowMatrix) {
+        return b - alphaError - multiplyTwoMatrices(y.getRowMatrix(i), α.getRowMatrix(i).scalarAdd(-αi)).
+                multiply(x.getRowMatrix(i).multiply(rowMatrix.transpose())).getEntry(0, 0)
+                - multiplyTwoMatrices(y.getRowMatrix(j), α.getRowMatrix(j).scalarAdd(-αj)).
+                multiply(rowMatrix.multiply(x.getRowMatrix(j).transpose())).getEntry(0, 0);
     }
 
     private void αjClipping(int j, double highBound, double lowBound) {

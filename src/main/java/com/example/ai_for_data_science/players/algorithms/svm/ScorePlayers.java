@@ -32,18 +32,18 @@ public class ScorePlayers {
     // append the record to svmTrainingData.csv - remove the older than 100 records
     // {{(winningScoreBC + winningSpedScoreBC)/2, (winningScoreH + winningSpedScoreH)/2},{1/-1}}
 
-    public static void main(String[] args) throws IOException {
-        //algScores = new AlgorithmsWinningScores();
-        addNewRecord(new double[]{6.345, 6.435}, -1);
-
-//        double[][][] trainingData = getTrainingData();
-//        for (double[][] row : trainingData) {
-//            System.out.println(Arrays.deepToString(row));
-//        }
+//    public static void main(String[] args) throws IOException {
+//        //algScores = new AlgorithmsWinningScores();
+//        addNewRecord(new double[]{6.345, 6.435}, -1);
 //
-//        updatePlayersScore(new double[][]{{4.55, 0.44}, {3.45, 0.33}});
-
-    }
+////        double[][][] trainingData = getTrainingData();
+////        for (double[][] row : trainingData) {
+////            System.out.println(Arrays.deepToString(row));
+////        }
+////
+////        updatePlayersScore(new double[][]{{4.55, 0.44}, {3.45, 0.33}});
+//
+//    }
 
     public static double[][][] getTrainingData() {
         reduceDataSet();

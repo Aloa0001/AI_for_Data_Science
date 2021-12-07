@@ -50,14 +50,17 @@ public class AlgorithmsWinningScores {
         for (String name : ALGO_NAMES) {
             JSONObject algorithm = new JSONObject();
             JSONObject algoItem = new JSONObject();
-            if (name.equals(algoName)) {
-                algorithm.put("winningScore", algoScores[1]);
-                algorithm.put("winningSpeedScore", algoScores[0]);
-            } else {
-                double[] oldScores = getAlgScores(name);
-                algorithm.put("winningScore", oldScores[1]);
-                algorithm.put("winningSpeedScore", oldScores[0]);
-            }
+            double[] algScores = name.equals(algoName) ? algoScores : getAlgScores(name);
+            algorithm.put("winningScore", algScores[1]);
+            algorithm.put("winningSpeedScore", algScores[0]);
+//            if (name.equals(algoName)) {
+//                algorithm.put("winningScore", algoScores[1]);
+//                algorithm.put("winningSpeedScore", algoScores[0]);
+//            } else {
+//                double[] oldScores = getAlgScores(name);
+//                algorithm.put("winningScore", oldScores[1]);
+//                algorithm.put("winningSpeedScore", oldScores[0]);
+//            }
             algoItem.put(name, algorithm);
             algorithms.add(algoItem);
         }

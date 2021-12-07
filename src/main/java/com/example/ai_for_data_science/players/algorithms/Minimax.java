@@ -38,7 +38,7 @@ public class Minimax implements Algorithm {
     @Override
     public int returnMove(int[] gameBoard) {
 
-        int bestEval = Integer.MIN_VALUE;
+        int bestEval = Integer.MIN_VALUE; // - 2^31 - 1.
         int bestMove = -1;
 
         for (int col : Connect4.getAvailableMoves(gameBoard))
@@ -67,6 +67,10 @@ public class Minimax implements Algorithm {
 
         ++nodesExamined;
         int evalGameFinished;
+
+        if (depth == 0)     // if the maximum depth was hit => evaluate the position to find the next best move
+            return evalGame(gameBoard);
+
         if ((evalGameFinished = Connect4.gameIsFinished(gameBoard)) > -1) {     // if the game finished => evaluate the position to find the next best move
 
             if (collectData) {
@@ -79,8 +83,6 @@ public class Minimax implements Algorithm {
 
             return evalGameFinished(gameBoard, evalGameFinished, depth);
         }
-        if (depth == 0)     // if the maximum depth was hit => evaluate the position to find the next best move
-            return evalGame(gameBoard);
 
         if (maximizingPlayer) {
             int maxEval = Integer.MIN_VALUE;
@@ -125,13 +127,13 @@ public class Minimax implements Algorithm {
      */
     private int evalGameFinished(int[] gameBoard, int evalGameFinished, int depth) {   // (me)p1 loses in the next move
         if ((evalGameFinished == 2 && isPlayerOne) || (evalGameFinished == 1 && !isPlayerOne)) {
-            return -100000 - depth;
+            return -100000 - depth; // minimax loses -> not a good situation -> return a huge negative value
         }
         else if ((evalGameFinished == 1) || (evalGameFinished == 2)){
-            return 100000 + depth;
+            return 100000 + depth; // minimax wins -> a good situation -> return a huge positive value
         }
         else {
-            return 0;
+            return 0; // is a tie - it may be not sure if is a win or a loose, but it is left for next iterations to be decided if is a win or loose
         }
     }
 
@@ -186,7 +188,7 @@ public class Minimax implements Algorithm {
 
         // System.out.println("gameBoard:  " + Connect4.gameBoardToString(gameBoard) + "    eval:  " + fourCellEval);
 
-        fourCellEval = isPlayerOne ? fourCellEval : -fourCellEval;
+        fourCellEval = isPlayerOne ? fourCellEval : - fourCellEval;
         return fourCellEval;
     }
 

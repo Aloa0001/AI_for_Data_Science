@@ -10,9 +10,9 @@ public class SupportVectorMachine {
     private RealMatrix x, y, α, w; // x - the feature; y- the label; α - soft margins; w - the hyperplane
     private double b;
     private final int MAX_ITERATIONS = 100;
-    private final double EPSILON = 0.001;
+    private final double EPSILON = 0.001; // defines the tolerable error of the regression model
     static final double MIN_ALPHA_OPT = 0.00001;
-    static final double SOFT_PARAM_C = 1.0;
+    static final double SOFT_PARAM_C = 1.0; // the regularization parameter - the error 'score'
 
 
     public SupportVectorMachine(RealMatrix x, RealMatrix y) {
@@ -21,7 +21,7 @@ public class SupportVectorMachine {
         this.b = 0;
         double[] αList = new double[x.getData().length];
         IntStream.range(0, αList.length).forEach(i -> αList[i] = 0);
-        α = MatrixUtils.createColumnRealMatrix(αList);
+        α = MatrixUtils.createColumnRealMatrix(αList); //
         int iteration = 0;
         while (iteration < MAX_ITERATIONS) {
             iteration = SequentialMinimalOptimization() == 0 ? iteration + 1 : 0;
@@ -33,7 +33,10 @@ public class SupportVectorMachine {
     private int SequentialMinimalOptimization() {
         int αOptimizedPaired = 0;
         for (int i = 0; i < x.getData().length; i++) {
-            RealMatrix firstAlphaError = multiplyTwoMatrices(y, α).transpose().multiply(x.multiply(x.getRowMatrix(i).transpose())).scalarAdd(b).subtract(y.getRowMatrix(i));
+            RealMatrix firstAlphaError = multiplyTwoMatrices(y, α).transpose()
+                    .multiply(x.multiply(x.getRowMatrix(i).transpose()))
+                    .scalarAdd(b)
+                    .subtract(y.getRowMatrix(i));
             // to move forward α has to violate the KKT (Karush-Kuhn Tucker) conditions:
             //      1] α = 0 -> correctly label example with room to spare
             //      2] α = c -> misclassified  label example
@@ -53,9 +56,14 @@ public class SupportVectorMachine {
                 // αj = -αj + y2(firstAlphaError - secondAlphaError)/η
                 // αj_clipped = (H , if αj >= H) || (αj , if L < αj < H) || (L, if αj <= L)  --- clipping alphaJ
                 // αi = αi + y1*y2*(αj - αj_clipped) --- use the clipped alphaJ to optimize alphaI
-                double η = x.getRowMatrix(i).multiply(x.getRowMatrix(j).transpose()).scalarMultiply(2.0).getEntry(0, 0) // 2x1 . x2
-                        - x.getRowMatrix(i).multiply(x.getRowMatrix(i).transpose()).getEntry(0, 0)  // - x1 . x1
-                        - x.getRowMatrix(j).multiply(x.getRowMatrix(j).transpose()).getEntry(0, 0); // - x2 . x2
+                double η = x.getRowMatrix(i).multiply(x.getRowMatrix(j)
+                        .transpose())
+                        .scalarMultiply(2.0)
+                        .getEntry(0, 0) // 2x1 * x2
+                        - x.getRowMatrix(i).multiply(x.getRowMatrix(i)
+                        .transpose())
+                        .getEntry(0, 0)  // - x1 * x1
+                        - x.getRowMatrix(j).multiply(x.getRowMatrix(j).transpose()).getEntry(0, 0); // - x2 * x2
 
                 if (bounds[0] != bounds[1] && η < 0) {
                     if (optimizeAlphaPair(i, j, firstAlphaError.getEntry(0, 0), secondAlphaError.getEntry(0, 0), η, bounds, αi, αj)) {
@@ -93,16 +101,11 @@ public class SupportVectorMachine {
 
     private double[] αBounds(double α1, double α2, double y1, double y2) {
         double[] bounds = new double[2];
-        bounds[0] = (y1 != y2) ? Math.max(0, α2 - α1) : Math.max(0, α2 + α1 - SOFT_PARAM_C);
-        bounds[1] = (y1 != y2) ? Math.min(SOFT_PARAM_C, α2 - α1 + SOFT_PARAM_C) : Math.min(SOFT_PARAM_C, α2 + α1);
+        bounds[0] = (y1 != y2) ? Math.max(0, α2 - α1)
+                : Math.max(0, α2 + α1 - SOFT_PARAM_C);
 
-//        if (y1 != y2){
-//            bounds[0] = Math.max(0, α2 - α1);
-//            bounds[1] = Math.min(REG_COEFFICIENT, α2 - α1 + REG_COEFFICIENT);
-//        }else{
-//            bounds[0] = Math.max(0, α2 + α1 - REG_COEFFICIENT);
-//            bounds[1] = Math.min(REG_COEFFICIENT, α2 + α1);
-//        }
+        bounds[1] = (y1 != y2) ? Math.min(SOFT_PARAM_C, α2 - α1 + SOFT_PARAM_C)
+                : Math.min(SOFT_PARAM_C, α2 + α1);
         return bounds;
     }
 
@@ -150,7 +153,7 @@ public class SupportVectorMachine {
         if (α.getEntry(j, 0) > highBound) α.setEntry(j, 0, highBound);
     }
 
-    public int classify(RealMatrix entry) {
+    public int predict(RealMatrix entry) {
         return (int) Math.signum(entry.multiply(w).getEntry(0, 0)+ b);
     }
 
@@ -164,7 +167,7 @@ public class SupportVectorMachine {
         return wMatrix;
     }
 
-    public RealMatrix getΑ() {
+    public RealMatrix getΑlpha() {
         return α;
     }
 

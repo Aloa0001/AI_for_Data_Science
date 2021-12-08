@@ -23,19 +23,19 @@ public class BayesianClassifier implements Algorithm {
         float highestProbability = 0;
         int bestMoveCol = 0;
 
-        System.out.print("\nMove probabilities: [ ");
+        //System.out.print("\nMove probabilities: [ ");
         for (int m : Connect4.getAvailableMoves(gameBoard)) {
             int[] nextGameBoard = Connect4.nextGameBoard(gameBoard, m, isPlayerOne);
             float probability = predictWinProbability(nextGameBoard);
 
-            System.out.print(probability + ", ");
+            //System.out.print(probability + ", ");
 
             if (probability > highestProbability) {
                 highestProbability = probability;
                 bestMoveCol = m;
             }
         }
-        System.out.print("]  -  Probability chosen: " + highestProbability + ", moveCol: (" + bestMoveCol + ")");
+        //System.out.print("]  -  Probability chosen: " + highestProbability + ", moveCol: (" + bestMoveCol + ")");
 
         return bestMoveCol;
     }
@@ -104,18 +104,18 @@ public class BayesianClassifier implements Algorithm {
     private float calculateAccuracy() {
 
         int correctClassifications = 0;
-        int totalClassifications = dataSet.testData_results.length / 10;
+        int totalClassifications = dataSet.gameBoards.length / 100;
 
         System.out.print("  Evaluating " + totalClassifications + " entries...  ");
         for (int i = 0; i < totalClassifications; i++) {
             if (i % 100 == 0)
                 System.out.print((double)Math.round((float)i/totalClassifications*10000)/100 + "%  ");
 
-            float[] predictions = predict(dataSet.testData_gameBoards[i]);
+            float[] predictions = predict(dataSet.gameBoards[i]);
 
             int predictedClassification = predictions[0] > predictions[1] ? 1 : -1;
 
-            if (predictedClassification == dataSet.testData_results[i]) {
+            if (predictedClassification == dataSet.results[i]) {
                 correctClassifications++;
             }
         }

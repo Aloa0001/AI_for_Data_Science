@@ -12,6 +12,8 @@ public class Minimax implements Algorithm {
     boolean isPlayerOne;
 
     long startTime;
+    long timeElapsed;
+    int movesMade;
 
     boolean collectData = false;
 
@@ -26,13 +28,17 @@ public class Minimax implements Algorithm {
         this.isPlayerOne = isPlayerOne;
         nodesExamined = 0;
         branchesPruned = 0;
-        startTime = System.currentTimeMillis();
+        timeElapsed = 0;
+        movesMade = 0;
+
         this.depth = depth;
     }
 
 
     @Override
     public int returnMove(int[] gameBoard) {
+
+        startTime = System.currentTimeMillis();
 
         int bestEval = Integer.MIN_VALUE;
         int bestMove = -1;
@@ -47,16 +53,23 @@ public class Minimax implements Algorithm {
             }
         }
 
+        timeElapsed += System.currentTimeMillis() - startTime;
+        ++movesMade;
+
         return bestMove;
     }
 
     @Override
     public void printResults() {
-        System.out.println("\nMinimax results:");
-        System.out.println("  Depth: " + depth);
-        System.out.println("  Time elapsed: " + ((System.currentTimeMillis() - startTime) / 1000) + " (s)");
-        System.out.println("  Nodes Examined: " + nodesExamined);
-        System.out.println("  Branches Pruned: " + branchesPruned);
+        if (isPlayerOne) {
+            System.out.println("\nMinimax results:");
+            System.out.println("  Depth: " + depth);
+            System.out.println("  Time elapsed: " + timeElapsed + " (ms)");
+            System.out.println("  Moves made: " + movesMade);
+            System.out.println("  Avg. time per move: " + Math.round((float) timeElapsed / movesMade) + " (ms)");
+            System.out.println("  Nodes Examined: " + nodesExamined);
+            System.out.println("  Branches Pruned: " + branchesPruned);
+        }
     }
 
     private int minimax(int[] gameBoard, int depth, int alpha, int beta, boolean maximizingPlayer){

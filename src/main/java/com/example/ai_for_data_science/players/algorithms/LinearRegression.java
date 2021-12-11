@@ -1,10 +1,12 @@
 package com.example.ai_for_data_science.players.algorithms;
 import com.example.ai_for_data_science.Algorithm;
 import com.example.ai_for_data_science.Connect4;
+import com.example.ai_for_data_science.DataSet;
 
 import java.io.*;
 import java.lang.Math;
 import java.util.*;
+import java.util.stream.Stream;
 
 
 public class LinearRegression implements Algorithm {
@@ -13,7 +15,7 @@ public class LinearRegression implements Algorithm {
     double speedWinningRate = 0;
 
     public LinearRegression(float[][] independentFeatures, float[] dependentFeature, float[] weights, float bias,
-                            float learningRate, int iterations, int batchSize, boolean isPlayerOne) {
+                            float learningRate, int iterations, int batchSize, boolean isPlayerOne, DataSet dataSet) {
         this.independentFeatures = independentFeatures;
         this.dependentFeature = dependentFeature;
         this.weights = weights;
@@ -23,9 +25,11 @@ public class LinearRegression implements Algorithm {
         this.batchSize = batchSize;
 
         this.isPlayerOne = isPlayerOne;
+
+        this.dataSet = dataSet;
     }
 
-    public LinearRegression(float learningRate, int iterations, int batchSize, boolean isPlayerOne) {
+    public LinearRegression(float learningRate, int iterations, int batchSize, boolean isPlayerOne, DataSet dataSet) {
         Scanner scanner = null;
         try {
             scanner = new Scanner(new File("winRates.csv"));
@@ -62,6 +66,8 @@ public class LinearRegression implements Algorithm {
 
         this.isPlayerOne = isPlayerOne;
 
+        this.dataSet = dataSet;
+
         train();
     }
 
@@ -83,6 +89,7 @@ public class LinearRegression implements Algorithm {
 
     private boolean isPlayerOne;
 
+    private DataSet dataSet;
 
     @Override
     public int returnMove(int[] gameBoard) {
@@ -116,6 +123,7 @@ public class LinearRegression implements Algorithm {
         System.out.println("  Bias: " + bias);
         System.out.println("  MSE: " + mseCost());
         System.out.println("  R²: " + Math.round(rSquared() * 100000.0f) / 1000.0f + "%");
+        System.out.println("\n  Accuracy: " + calculateAccuracy());
     }
 
 
@@ -262,6 +270,33 @@ public class LinearRegression implements Algorithm {
         for (int i = 0; i < iterations; i++) {
             updateWeights();
         }
+    }
+
+
+    private float calculateAccuracy() {
+
+        int correctClassifications = 0;
+        int totalClassifications = dataSet.gameBoards.length;
+
+        //System.out.print("  Evaluating " + totalClassifications + " entries...  ");
+        for (int i = 0; i < totalClassifications; i++) {
+            //if (i % 100 == 0)
+                //System.out.print((double)Math.round((float)i/totalClassifications*10000)/100 + "%  ");
+
+            float[] nextGameBoard_f = new float[dataSet.gameBoards[i].length];
+            for (int j = 0 ; j < dataSet.gameBoards[i].length; j++) {
+                nextGameBoard_f[j] = (float)dataSet.gameBoards[i][j];
+            }
+
+            float predictedWinRate = predict(nextGameBoard_f);
+            int prediction = (predictedWinRate > 0.5f) ? 1 : -1;
+
+            if (prediction == dataSet.results[i]) {
+                correctClassifications++;
+            }
+        }
+
+        return (float)correctClassifications / totalClassifications;
     }
 
 

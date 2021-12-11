@@ -1,367 +1,242 @@
 package com.example.ai_for_data_science;
 
-import com.example.ai_for_data_science.players.Player;
-import com.example.ai_for_data_science.players.Type;
-import javafx.animation.TranslateTransition;
-import javafx.geometry.Point2D;
-import javafx.scene.Scene;
-import javafx.scene.layout.Border;
-import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.Shape;
-import javafx.stage.Stage;
-import javafx.util.Duration;
 
+import com.example.ai_for_data_science.players.algorithms.BayesianClassifier;
+import com.example.ai_for_data_science.players.algorithms.Human;
+import com.example.ai_for_data_science.players.algorithms.svm.AlgorithmsWinningScores;
+import com.example.ai_for_data_science.players.algorithms.svm.ScorePlayers;
+
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import java.util.Arrays;
 
-import static javafx.scene.shape.Shape.subtract;
 
 public class Connect4 {
 
-    private static final int BOARD_UNIT_SIZE = 60;
-    private static final int BOARD_COLUMNS = 7;
-    private static final int BOARD_ROWS = 6;
-    private final int EXTRA_SPACE = 5;
-    private static final int RADIUS = BOARD_UNIT_SIZE >> 1;
-    private Player p1, p2;
+    private int[] gameBoard = new int[42];      // Default value is 0
+    private ArrayList<Integer> moveOrder = new ArrayList<>();
 
-    private boolean firstPlayer = true;
-    private boolean specialCase = false;
-    private final GameBoardUnit[][] gameBoard = new GameBoardUnit[BOARD_COLUMNS][BOARD_ROWS];
-    private final Pane gameBoardRoot = new Pane();
-    private Stage stage;
 
-    /**
-     * display the game board
-     */
-    public void play(String firstPlayerName, String secondPlayerName) {
-        this.p1 = new Player(firstPlayerName);
-        this.p2 = new Player(secondPlayerName);
-
-        Stage stage = new Stage();
-
-        stage.setTitle("Connect4");
-        Pane scene = new Pane();
-        scene.setBorder(Border.EMPTY);
-        scene.getChildren().add(gameBoardRoot);
-
-        Shape gridBoard = makeGridBoard();
-        scene.getChildren().add(gridBoard);
-        scene.getChildren().addAll(makeColumns());
-        stage.setScene(new Scene(scene));
-        stage.show();
-        this.stage = stage;
-
-        if (p1.getType() == Type.HUMAN && p2.getType() == Type.HUMAN) {
-            p1.setName("First Player");
-            p2.setName("Second Player");
-        } else if (p1.getType() != Type.HUMAN && p2.getType() == Type.HUMAN) {
-            firstPlayer = !firstPlayer;
-            specialCase = true;
-            aiTurn(new GameBoardUnit(firstPlayer, RADIUS), p2.move());
-        } else if (p1.getType() != Type.HUMAN && p2.getType() != Type.HUMAN) {
-            specialCase = true;
-            int column = 0;
-            int currentRow = 0;
-            do {
-                GameBoardUnit gameBoardUnit = new GameBoardUnit(firstPlayer, RADIUS);
-                column = firstPlayer ? 2 : p2.move();
-                int rowIndex = BOARD_ROWS - 1;
-                do {
-                    if (getGameBoard(column, rowIndex).isEmpty()) {
-                        break;
-                    }
-
-                    rowIndex--;
-                } while (rowIndex >= 0);
-
-                if (rowIndex < 0) {
-                    System.out.println("selected column is full");
-                    //
-                    return;
-                }
-
-                this.gameBoard[column][rowIndex] = gameBoardUnit;
-                gameBoardRoot.getChildren().add(gameBoardUnit);
-                gameBoardUnit.setTranslateX(column * (BOARD_UNIT_SIZE + EXTRA_SPACE) + (BOARD_UNIT_SIZE >> 2));
-
-                currentRow = rowIndex;
-
-                TranslateTransition animation = new TranslateTransition(Duration.seconds(1), gameBoardUnit);
-                animation.setToY(rowIndex * (BOARD_UNIT_SIZE + EXTRA_SPACE) + (BOARD_UNIT_SIZE >> 2));
-                animation.play();
-
-                if (checkWinner(column, currentRow)) {
-                    gameOver();
-                    break;
-                }
-                firstPlayer = !firstPlayer;
-            }while(true);
-        }
+    public Connect4() {
     }
 
-    /**
-     * create the game board
-     *
-     * @return the grid shape with the circles
-     */
-    private Shape makeGridBoard() {
-        Shape shape = new Rectangle(BOARD_COLUMNS * BOARD_UNIT_SIZE + BOARD_UNIT_SIZE, BOARD_ROWS * BOARD_UNIT_SIZE + BOARD_UNIT_SIZE);
-
-        // build each element of the grid
-        for (int x = 0; x < BOARD_ROWS; x++) {
-            for (int y = 0; y < BOARD_COLUMNS; y++) {
-
-                // for each element (row, col) create a circle
-                Circle circle = getCircle(x, y);
-
-                // subtract the area of the  circle from the shape
-                shape = subtract(shape, circle);
-            }
-        }
-
-        shape.setFill(Color.DARKGRAY);
-
-        return shape;
+    public void reset() {
+        gameBoard = new int[42];
     }
 
-    /**
-     * create a circle
-     *
-     * @param row location
-     * @param col location
-     * @return the circle
-     */
-    private Circle getCircle(int row, int col) {
-        Circle circle = new Circle();
-        circle.setRadius(Connect4.RADIUS);
+    public void play(Algorithm player1, Algorithm player2) {
+        int gameIsFinished = -1;
+        double movesP1 = 0;
+        double movesP2 = 0;
 
-        // the horizontal/vertical position of the center of the circle in pixels and translate to the next
-        circle.setCenterX(Connect4.RADIUS);
-        circle.setCenterY(Connect4.RADIUS);
+        boolean isPlayerOne = true;
+        int moveCol;
 
-        // set the circle on the grid
-        circle.setTranslateX(col * (BOARD_UNIT_SIZE + EXTRA_SPACE) + (Connect4.RADIUS >> 1));
-        circle.setTranslateY(row * (BOARD_UNIT_SIZE + EXTRA_SPACE) + (Connect4.RADIUS >> 1));
-
-        return circle;
-    }
-
-    private List<Rectangle> makeColumns() {
-        List<Rectangle> columns = new ArrayList<>();
-
-        for (int col = 0; col < BOARD_COLUMNS; col++) {
-            Rectangle colUnit = new Rectangle(BOARD_UNIT_SIZE, (BOARD_ROWS + 1) * BOARD_UNIT_SIZE);
-            colUnit.setTranslateX(col * (BOARD_UNIT_SIZE + EXTRA_SPACE) + (BOARD_UNIT_SIZE >> 2));
-            colUnit.setFill(Color.TRANSPARENT);
-
-            // add mouse/click events
-            colUnit.setOnMouseEntered(e -> colUnit.setFill(Color.rgb(122, 122, 109, 0.2)));
-            colUnit.setOnMouseExited(e -> colUnit.setFill(Color.TRANSPARENT));
-
-            clickEvent(col, colUnit);
-
-            columns.add(colUnit);
-        }
-
-        return columns;
-    }
-
-    /**
-     * setting action for click event
-     *
-     * @param column  the column
-     * @param colUnit the clicked unit
-     */
-    private void clickEvent(int column, Rectangle colUnit) {
-        colUnit.setOnMouseClicked(e -> playerMove(new GameBoardUnit(firstPlayer, RADIUS), column));
-    }
-
-    /**
-     * @param gameBoard game
-     * @param column    disc insertion
-     */
-    private void playerMove(GameBoardUnit gameBoard, int column) {
-        if (p1.getType() == Type.HUMAN && p2.getType() != Type.HUMAN) {
-            if (humanMove(gameBoard, column)) return;
-        } else if (p1.getType() != Type.HUMAN && p2.getType() == Type.HUMAN) {
-            if (humanMove(gameBoard, column)) return;
-        } else if (p1.getType() == Type.HUMAN && p2.getType() == Type.HUMAN) {
-            int rowIndex = BOARD_ROWS - 1;
-            do {
-                if (getGameBoard(column, rowIndex).isEmpty()) {
-                    break;
-                }
-
-                rowIndex--;
-            } while (rowIndex >= 0);
-
-            if (rowIndex < 0) {
-                System.out.println("selected column is full");
-                //
-                return;
-            }
-
-            this.gameBoard[column][rowIndex] = gameBoard;
-            gameBoardRoot.getChildren().add(gameBoard);
-            gameBoard.setTranslateX(column * (BOARD_UNIT_SIZE + EXTRA_SPACE) + (BOARD_UNIT_SIZE >> 2));
-
-            final int currentRow = rowIndex;
-
-            TranslateTransition animation = new TranslateTransition(Duration.seconds(0.5), gameBoard);
-            animation.setToY(rowIndex * (BOARD_UNIT_SIZE + EXTRA_SPACE) + (BOARD_UNIT_SIZE >> 2));
-            animation.setOnFinished(e -> {
-                if (checkWinner(column, currentRow)) {
-                    gameOver();
-                }
-                firstPlayer = !firstPlayer;
-            });
-            animation.play();
-        } else {
-            // AIs playing
-        }
-
-
-    }
-
-    private boolean humanMove(GameBoardUnit gameBoard, int column) {
-        int rowIndex = BOARD_ROWS - 1;
         do {
-            if (getGameBoard(column, rowIndex).isEmpty()) {
-                break;
+            /* Alternate player and get the move decided by the player */
+            if (isPlayerOne) {
+                moveCol = player1.returnMove(gameBoard);
+                movesP1++;
+            }
+            else {
+                  moveCol = player2.returnMove(gameBoard);
+                  movesP2++;
             }
 
-            rowIndex--;
-        } while (rowIndex >= 0);
-
-        if (rowIndex < 0) {
-            System.out.println("selected column is full");
-            //
-            return true;
-        }
-
-        this.gameBoard[column][rowIndex] = gameBoard;
-        gameBoardRoot.getChildren().add(gameBoard);
-        gameBoard.setTranslateX(column * (BOARD_UNIT_SIZE + EXTRA_SPACE) + (BOARD_UNIT_SIZE >> 2));
-
-        final int currentRow = rowIndex;
-
-        TranslateTransition animation = new TranslateTransition(Duration.seconds(0.5), gameBoard);
-        animation.setToY(rowIndex * (BOARD_UNIT_SIZE + EXTRA_SPACE) + (BOARD_UNIT_SIZE >> 2));
-        animation.play();
-        animation.setOnFinished(e -> {
-            if (checkWinner(column, currentRow)) {
-                gameOver();
-            } else {
-                firstPlayer = !firstPlayer;
-                aiTurn(new GameBoardUnit(firstPlayer, RADIUS), p2.move());
+            if (validateMove(gameBoard, moveCol)) {
+                performMove(moveCol, isPlayerOne);
+                moveOrder.add(moveCol);
             }
-        });
-        return false;
-    }
-
-    private void aiTurn(GameBoardUnit gameBoardUnit, int column) {
-        int rowIndex = BOARD_ROWS - 1;
-        do {
-            if (getGameBoard(column, rowIndex).isEmpty()) {
-                break;
-            }
-
-            rowIndex--;
-        } while (rowIndex >= 0);
-
-        if (rowIndex < 0) {
-            System.out.println("selected column is full");
-            //
-            return;
-        }
-
-        this.gameBoard[column][rowIndex] = gameBoardUnit;
-        gameBoardRoot.getChildren().add(gameBoardUnit);
-        gameBoardUnit.setTranslateX(column * (BOARD_UNIT_SIZE + EXTRA_SPACE) + (BOARD_UNIT_SIZE >> 2));
-
-        final int currentRow = rowIndex;
-
-        TranslateTransition animation = new TranslateTransition(Duration.seconds(1), gameBoardUnit);
-        animation.setToY(rowIndex * (BOARD_UNIT_SIZE + EXTRA_SPACE) + (BOARD_UNIT_SIZE >> 2));
-        animation.play();
-
-        if (checkWinner(column, currentRow)) {
-            gameOver();
-        }
-        firstPlayer = !firstPlayer;
-    }
-
-    private boolean checkWinner(int column, int row) {
-        var colAlignment = IntStream.rangeClosed(column - 3, column + 3)
-                .mapToObj(col -> new Point2D(col, row))
-                .collect(Collectors.toList());
-
-        var rowAlignment = IntStream.rangeClosed(row - 3, row + 3)
-                .mapToObj(r -> new Point2D(column, r))
-                .collect(Collectors.toList());
-
-        var firstDiagonal = new Point2D(column - 3, row - 3);
-        var firstDiag = IntStream.rangeClosed(0, 6)
-                .mapToObj(i -> firstDiagonal.add(i, i))
-                .collect(Collectors.toList());
-
-        var secondDiagonal = new Point2D(column - 3, row + 3);
-        var secondDiag = IntStream.rangeClosed(0, 6)
-                .mapToObj(i -> secondDiagonal.add(i, -i))
-                .collect(Collectors.toList());
-
-        return !(!checkWinningCondition(rowAlignment) && !checkWinningCondition(colAlignment) && !checkWinningCondition(firstDiag) && !checkWinningCondition(secondDiag));
-    }
-
-    private boolean checkWinningCondition(List<Point2D> points) {
-        int collection = 0;
-
-        for (Point2D point2D : points) {
-            int column = (int) point2D.getX();
-            int row = (int) point2D.getY();
-
-            var gameBoard = getGameBoard(column, row).orElse(new GameBoardUnit(!firstPlayer, RADIUS));
-            if (gameBoard.isFirstPlayer() == firstPlayer) {
-                collection++;
-                if (collection == 4) {
-                    return true;
+            else {
+                try {
+                    throw new Exception("Invalid move was played!");
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            } else {
-                collection = 0;
+            }
+
+            isPlayerOne = !isPlayerOne;
+
+        } while ((gameIsFinished = gameIsFinished(gameBoard)) == -1);
+
+        if (player1 instanceof BayesianClassifier && player2 instanceof Human){
+            scorePlayers(movesP1, movesP2, !isPlayerOne);
+        }
+
+        // The game has finished!
+        System.out.println("Game is over! Result: " + gameIsFinished);
+        printGameBoard(gameBoard);
+        System.out.println("Move order: " + moveOrder.toString());
+    }
+
+    private void scorePlayers(double movesP1, double movesP2, boolean isP1Winning) {
+        ScorePlayers sP = new ScorePlayers();
+        AlgorithmsWinningScores aS = new AlgorithmsWinningScores();
+        double[] bcScores = aS.getAlgScores("BayesianClassifier");
+        double[] hScores = aS.getAlgScores("Human");
+        double p1Speed = (movesP1/21) + bcScores[1];
+        double p1WinScore = (2 * bcScores[0] + (isP1Winning ? 1 : -1))/2;
+        double p2Speed = (movesP2/21) + bcScores[1];
+        double p2WinScore = (2 * hScores[0] + (isP1Winning ? 1 : -1))/2;
+        aS.fillAlgoScores("BayesianClassifier", new double[]{p1WinScore, p1Speed});
+        aS.fillAlgoScores("Human", new double[]{p2WinScore, p2Speed});
+        try {
+            sP.addNewRecord(new double[]{(p1Speed +p1WinScore)/2, (p2Speed +p2WinScore)/2}, (isP1Winning ? 1 : -1));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public static void printGameBoard(int[] gameBoard) {
+        System.out.println("____ gameBoard ____");
+        for (int i = 0; i < 6; i++) {
+            for (int j = 0; j < 7; j++) {
+                System.out.print(gameBoard[j + i * 7] + "  ");
+            }
+            System.out.println("");
+        }
+        System.out.println("___________________");
+    }
+
+    public static String gameBoardToString(int[] gameBoard) {
+        String representation = "";
+        for (int i = 0; i < 6; i++) {
+            for (int j = 0; j < 7; j++) {
+                representation += (gameBoard[j + i * 7]);
+            }
+        }
+        return representation;
+    }
+
+
+    public static boolean validateMove(int[] gameBoard, int moveCol) {
+        return  moveCol >= 0 && moveCol <= 6 && gameBoard[moveCol] == 0;
+    }
+
+    private void performMove(int moveCol, boolean isPlayerOne) {
+        gameBoard = nextGameBoard(gameBoard, moveCol, isPlayerOne);
+    }
+
+
+    /**
+     * Returns how the next gameBoard will look, after the inputted move has been made.
+     * Used by the minimax-algorithm to analyze the game in greater depth
+     * @param gameBoard The current gameBoard
+     * @param moveCol The move to make
+     * @param isPlayerOne Whether the move should be a 1 or 2
+     * @return The next gameBoard, after the move has been made
+     */
+    public static int[] nextGameBoard(int[] gameBoard, int moveCol, boolean isPlayerOne){
+        int[] nextGameBoard = Arrays.copyOf(gameBoard, gameBoard.length);
+
+        for (int i = moveCol + 35; i >= moveCol; i -= 7) {
+            if (gameBoard[i] == 0) {
+                nextGameBoard[i] = isPlayerOne ? 1 : 2;
+                return nextGameBoard;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @return A list of valid columns where the disc can be placed
+     */
+    public static ArrayList<Integer> getAvailableMoves(int[] gameBoard) {
+        ArrayList<Integer> moves = new ArrayList<>();
+        for (int col = 0; col < 7; col++) {
+            if (gameBoard[col] == 0) moves.add(col);
+        }
+        return moves;
+    }
+
+    /**
+     * Evaluates if any player has won the game
+     * @param gameBoard The gameBoard that is evaluated
+     * @return -1: the game has _not_ been finished, 0: the game is a tie, 1: player1 won, 2: player2 won
+     */
+    public static int gameIsFinished(int[] gameBoard){
+
+        // Horizontal check
+        for (int row = 0; row < 6; row++) {
+            for (int col = 0; col < 7-3; col++) {
+                if (gameBoard[row * 7 + col] == 1 &&
+                        gameBoard[row * 7 + col + 1] == 1 &&
+                        gameBoard[row * 7 + col + 2] == 1 &&
+                        gameBoard[row * 7 + col + 3] == 1){
+                    return 1; // player 1 has 4 horizontal discs in a row
+                }
+                if (gameBoard[row * 7 + col] == 2 &&
+                        gameBoard[row * 7 + col + 1] == 2 &&
+                        gameBoard[row * 7 + col + 2] == 2 &&
+                        gameBoard[row * 7 + col + 3] == 2){
+                    return 2; // player 2 has 4 horizontal discs in a row
+                }
             }
         }
 
-        return false;
+        // Vertical check
+        for (int col = 0; col < 7; col++) {
+            for (int row = 0; row < 6-3; row++) {
+                if (gameBoard[col + row * 7] == 1 &&
+                        gameBoard[col + (row + 1) * 7] == 1 &&
+                        gameBoard[col + (row + 2) * 7] == 1 &&
+                        gameBoard[col + (row + 3) * 7] == 1){
+                    return 1; // player 1 has 4 vertical discs in a row
+                }
+                if (gameBoard[col + row * 7] == 2 &&
+                        gameBoard[col + (row + 1) * 7] == 2 &&
+                        gameBoard[col + (row + 2) * 7] == 2 &&
+                        gameBoard[col + (row + 3) * 7] == 2){
+                    return 2; // player 2 has 4 vertical discs in a row
+                }
+            }
+        }
+
+        // diagonal (down + left) check
+        for (int col = 3; col < 7; col++){
+            for (int row = 0; row < 6-3; row++){
+                if (gameBoard[col + row * 7] == 1 &&
+                        gameBoard[col - 1 + (row + 1) * 7] == 1 &&
+                        gameBoard[col - 2 + (row + 2) * 7] == 1 &&
+                        gameBoard[col - 3 + (row + 3) * 7] == 1){
+                    return 1; // player 1 has 4 diagonal discs in a row
+                }
+                if (gameBoard[col + row * 7] == 2 &&
+                        gameBoard[col - 1 + (row + 1) * 7] == 2 &&
+                        gameBoard[col - 2 + (row + 2) * 7] == 2 &&
+                        gameBoard[col - 3 + (row + 3) * 7] == 2){
+                    return 2; // player 2 has 4 diagonal discs in a row
+                }
+            }
+        }
+        // diagonal (up + left) check
+        for (int col = 3; col < 7; col++){
+            for (int row = 3; row < 6; row++){
+                if (gameBoard[col + row * 7] == 1 &&
+                        gameBoard[col - 1 + (row - 1) * 7] == 1 &&
+                        gameBoard[col - 2 + (row - 2) * 7] == 1 &&
+                        gameBoard[col - 3 + (row - 3) * 7] == 1){
+                    return 1; // player 1 has 4 diagonal discs in a row
+                }
+                if (gameBoard[col + row * 7] == 2 &&
+                        gameBoard[col - 1 + (row - 1) * 7] == 2 &&
+                        gameBoard[col - 2 + (row - 2) * 7] == 2 &&
+                        gameBoard[col - 3 + (row - 3) * 7] == 2){
+                    return 2; // player 2 has 4 diagonal discs in a row
+                }
+            }
+        }
+
+        // not a tie check
+        for (int i = 0; i < 7; i++) {
+            if (gameBoard[i] == 0) { // found a tile where a disc can be placed => the game has _not_ been finished
+                return -1;
+            }
+        }
+
+        return 0; // if no player has won, and no more tiles can be placed => game resulted in a tie
     }
 
-    private void gameOver() {
-
-        System.out.println("Winner: " + (specialCase && !firstPlayer ? p1.getName() : firstPlayer ? p1.getName() : p2.getName()));
-        setStatistics();
-        this.stage.close();
-
-        new Dashboard().run();
-    }
-
-    private void setStatistics() {
-
-        // TODO Add the game data to each player's data
-
-    }
-
-    private Optional<GameBoardUnit> getGameBoard(int column, int row) {
-        if (column < 0 || column >= BOARD_COLUMNS
-                || row < 0 || row >= BOARD_ROWS)
-            return Optional.empty();
-
-        return Optional.ofNullable(gameBoard[column][row]);
-    }
 }
 
